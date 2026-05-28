@@ -1,0 +1,444 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>DanceFit Studio - Domina el Ritmo</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;1,700&family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+
+  <!-- ── NOTIFICACIÓN TOAST GLOBAL ── -->
+  <div id="toast"></div>
+
+  <!-- ── BARRA DE NAVEGACIÓN UNIFICADA ── -->
+  <nav>
+    <div class="nav-left">
+      <span class="logo" onclick="goTo('home')">DanceFit</span>
+      <div class="nav-links">
+        <button class="nav-link" id="nav-home" onclick="goTo('home')">Clases</button>
+        <button class="nav-link" id="nav-reservas" onclick="goTo('reservas')">Mis Reservas</button>
+        <button class="nav-link" id="nav-admin" onclick="goTo('admin')">Panel Admin</button>
+      </div>
+    </div>
+    <div class="nav-right-actions">
+      <button class="theme-btn" id="themeBtn" onclick="toggleTheme()">🌙 Oscuro</button>
+      <button class="logout-btn" id="nav-logout" style="display: none;" onclick="handleLogout()">Cerrar Sesión</button>
+    </div>
+  </nav>
+
+  <!-- ══════════════════════════════════════════
+       PANTALLA: LOGIN & REGISTRO (AUTH)
+       ══════════════════════════════════════════ -->
+  <div id="screen-login" class="screen">
+    <!-- El contenido se inyecta dinámicamente desde js/app.js -->
+  </div>
+
+  <!-- ══════════════════════════════════════════
+       PANTALLA: HOME CLIENTE (CATÁLOGO CLASES)
+       ══════════════════════════════════════════ -->
+  <div id="screen-home" class="screen">
+    <div class="hero">
+      <div class="hero-tag">Estudio de Baile Urbano</div>
+      <h1 class="hero-title">DOMINA EL <span>RITMO</span></h1>
+      <p class="hero-sub">Transforma tu energía a través de la precisión del movimiento. Clases de alto impacto diseñadas para todos los niveles.</p>
+      <div class="hero-btns">
+        <button class="btn-primary" onclick="document.getElementById('clases-secc').scrollIntoView({behavior:'smooth'})">Explorar Clases →</button>
+        <button class="btn-secondary">Conoce el Estudio</button>
+      </div>
+    </div>
+
+    <div class="section" id="clases-secc">
+      <h2 class="section-title">Próximas Clases</h2>
+      <p class="section-sub">Encuentra tu estilo y reserva tu lugar en la pista.</p>
+      <div class="filter-row" id="filterRow"></div>
+      <div class="classes-grid" id="classesGrid"></div>
+    </div>
+
+    <div class="cta-block">
+      <h2 class="cta-title">¿LISTO PARA <span>MOVERTE?</span></h2>
+      <p class="cta-sub">Únete a nuestra comunidad hoy mismo. Tu primera clase es cortesía de DanceFit.</p>
+      <div class="hero-btns">
+        <button class="btn-primary">Empieza Gratis Ahora</button>
+        <button class="btn-secondary" style="color:#f0ece4; border-color:#444">Ver Planes Especiales</button>
+      </div>
+    </div>
+
+    <footer>
+      <span class="logo" style="font-size:1.15rem">DanceFit</span>
+      <div class="footer-links">
+        <span class="nav-link visible">Instagram</span>
+        <span class="nav-link visible">TikTok</span>
+        <span class="nav-link visible">Privacidad</span>
+        <span class="nav-link visible">Soporte</span>
+      </div>
+      <span>© 2026 DanceFit Studio. Move with Precision.</span>
+    </footer>
+  </div>
+
+  <!-- ══════════════════════════════════════════
+       PANTALLA: SELECCIÓN DE SPOT EN LA PISTA
+       ══════════════════════════════════════════ -->
+  <div id="screen-spot" class="screen">
+    <div class="page">
+      <button class="page-back" onclick="goTo('home')">
+        <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2"><path d="M10 12L6 8l4-4"/></svg>
+        Volver a Clases
+      </button>
+
+      <div class="steps">
+        <!-- Indicador visual de progreso -->
+      </div>
+
+      <h1 class="page-title">Elige tu <span>Spot</span></h1>
+      <p class="page-sub">Selecciona la posición ideal en la sala para esta clase.</p>
+
+      <div class="two-col">
+        <div>
+          <div class="legend">
+            <div class="legend-item"><div class="legend-dot" style="background:var(--bg-card2); border:1.5px solid var(--border)"></div> Disponible</div>
+            <div class="legend-item"><div class="legend-dot" style="background:var(--accent); border:1.5px solid var(--accent)"></div> Seleccionado</div>
+            <div class="legend-item"><div class="legend-dot" style="background:var(--bg-card2); opacity:.35; border:1.5px solid transparent"></div> Ocupado</div>
+          </div>
+          <div class="spot-section">
+            <div class="stage-bar">🎤 Escenario / Instructor</div>
+            <div class="spot-grid" id="spotGrid"></div>
+          </div>
+        </div>
+
+        <div class="sidebar">
+          <div class="sidebar-label" id="sb-style">REGGAETÓN</div>
+          <div class="sidebar-title" id="sb-name">Clase de Baile</div>
+          <div class="sidebar-instructor" id="sb-inst">Con Instructor</div>
+          <div class="sidebar-grid">
+            <div><div class="sidebar-item-label">Instructor</div><div class="sidebar-item-val" id="sb-prof">Instructor</div></div>
+            <div><div class="sidebar-item-label">Duración</div><div class="sidebar-item-val" id="sb-dur">90 min</div></div>
+            <div><div class="sidebar-item-label">Horario</div><div class="sidebar-item-val" id="sb-time">19:30h</div></div>
+            <div><div class="sidebar-item-label">Sede</div><div class="sidebar-item-val">Norte – Studio A</div></div>
+          </div>
+
+          <div class="spot-selected-display">
+            <div>
+              <div class="spot-display-label">Spot elegido</div>
+              <div class="spot-display-val empty" id="spotDisplay">— Sin elegir</div>
+            </div>
+            <div style="text-align:right">
+              <div class="spot-display-label">Total</div>
+              <div style="font-weight:800; font-size:1.35rem" id="sb-price">S/ 25.00</div>
+            </div>
+          </div>
+
+          <button class="btn-primary" id="btnSpotContinue" style="width:100%; margin-top:1.5rem" disabled onclick="handleSpotContinue()">Continuar →</button>
+          <div class="info-box" style="margin-top:1rem; font-size:0.75rem; color:var(--text-muted); display:flex; gap:6px;">
+            <span>ℹ️</span><span>Selecciona un asiento en el plano interactivo y presiona Continuar.</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════════════
+       PANTALLA: CONFIRMACIÓN DE DATOS (IDENTIFICACIÓN)
+       ══════════════════════════════════════════ -->
+  <div id="screen-ident" class="screen">
+    <div class="page">
+      <button class="page-back" onclick="goTo('spot')">
+        <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2"><path d="M10 12L6 8l4-4"/></svg>
+        Volver a elegir Spot
+      </button>
+
+      <h1 class="page-title">Confirma tus <span>Datos</span></h1>
+      <p class="page-sub">Verifica los datos de registro que se utilizarán para tu ingreso a la sede.</p>
+
+      <div class="two-col">
+        <div>
+          <div class="field">
+            <label class="lbl" for="inputName">Nombre y Apellido del Alumno</label>
+            <input class="inp" id="inputName" type="text" placeholder="Ej. Martina García" oninput="validateClientIdent()">
+            <div class="error-msg" id="errName">El nombre debe tener al menos 3 caracteres.</div>
+          </div>
+          <div class="field">
+            <label class="lbl" for="inputDni">DNI / Documento de Identidad</label>
+            <input class="inp" id="inputDni" type="text" placeholder="Ej. 76543210" oninput="validateClientIdent()" maxlength="12">
+            <div class="error-msg" id="errDni">Ingresa un DNI o documento válido (6 a 12 caracteres numéricos).</div>
+          </div>
+          <button class="btn-primary" id="btnIdentContinue" style="width:100%; padding:15px; margin-top:0.5rem" disabled onclick="handleIdentContinue()">
+            Confirmar e ir al Pago →
+          </button>
+          <p class="security-note">🔒 Tus datos están protegidos bajo políticas RLS directas en Supabase.</p>
+        </div>
+
+        <div class="sidebar">
+          <div class="sidebar-label">Resumen de Compra</div>
+          <div class="sidebar-title" id="ident-cls-name">Nombre de Clase</div>
+          <div class="sidebar-instructor" id="ident-cls-inst">Con Instructor</div>
+          <div class="sidebar-grid">
+            <div><div class="sidebar-item-label">Horario</div><div class="sidebar-item-val" id="ident-time">19:30h</div></div>
+            <div><div class="sidebar-item-label">Sede</div><div class="sidebar-item-val">Norte – Studio A</div></div>
+            <div><div class="sidebar-item-label">Spot</div><div class="sidebar-item-val" style="color:var(--accent)" id="ident-spot">#10</div></div>
+            <div><div class="sidebar-item-label">Nivel</div><div class="sidebar-item-val" id="ident-level">ADVANCED</div></div>
+          </div>
+          <div class="sidebar-total">
+            <span class="sidebar-total-label">Total a Pagar:</span>
+            <span class="sidebar-total-val" id="ident-price">S/ 25.00</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════════════
+       PANTALLA: PASARELA YAPE (PAGO)
+       ══════════════════════════════════════════ -->
+  <div id="screen-payment" class="screen">
+    <div class="page">
+      <button class="page-back" onclick="goTo('ident')">
+        <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2"><path d="M10 12L6 8l4-4"/></svg>
+        Volver a Datos de Ingreso
+      </button>
+
+      <h1 class="page-title">Finaliza tu <span>Reserva</span></h1>
+      <p class="page-sub">Estás a un paso de liberar tu ritmo. Completa el pago mediante Yape.</p>
+
+      <div class="two-col">
+        <div>
+          <div class="pay-card">
+            <div class="yape-header">
+              <div class="yape-icon">⚡</div>
+              <div>
+                <div style="font-weight:700; font-size:1.1rem; color:var(--text);">Pagar con Yape</div>
+                <div style="font-size:.8rem; color:var(--teal)">Rápido, sin contacto y verificado en Supabase</div>
+              </div>
+              <div style="margin-left:auto">
+                <svg width="60" height="60" viewBox="0 0 80 80" id="qrSvg"></svg>
+              </div>
+            </div>
+            
+            <div class="pay-grid">
+              <div class="field">
+                <label class="lbl" for="inputPhone">Celular Yape</label>
+                <input class="inp" id="inputPhone" type="tel" placeholder="999999999" oninput="validateClientPayment()" maxlength="9">
+                <div class="error-msg" id="errPhone">El celular Yape debe tener 9 dígitos numéricos.</div>
+              </div>
+              <div class="field">
+                <label class="lbl" for="inputCode">Código de Aprobación</label>
+                <input class="inp" id="inputCode" type="text" placeholder="123456" oninput="validateClientPayment()" maxlength="6">
+                <div class="error-msg" id="errCode">El código debe ser de 6 dígitos numéricos.</div>
+                <div class="help-text">Obtenlo en la sección "Código de aprobación" dentro del menú de tu app Yape.</div>
+              </div>
+            </div>
+            <button class="btn-primary" id="btnPay" style="width:100%; margin-top:1.5rem; padding:16px; font-size:1rem" disabled onclick="handlePaymentSubmission()">
+              Yapear S/ <span id="payBtnTotal">0.00</span>
+            </button>
+          </div>
+
+          <div class="secure-badges" style="display:flex; justify-content:center; gap:20px;">
+            <span style="font-size:0.75rem; font-weight:700; color:var(--text-muted);">🛡️ TRANSACCIÓN SEGURA</span>
+            <span style="font-size:0.75rem; font-weight:700; color:var(--text-muted);">🔒 VERIFICACIÓN REAL</span>
+          </div>
+        </div>
+
+        <div class="sidebar">
+          <div style="background:linear-gradient(135deg,#1f130b,#0b1522); border-radius:10px; height:120px; display:flex; align-items:center; justify-content:center; font-size:3.5rem; margin-bottom:1rem" id="pay-emoji">🔥</div>
+          <div id="pay-level" style="font-size:.68rem; font-weight:700; letter-spacing:.1em; padding:3px 10px; border-radius:4px; display:inline-block; margin-bottom:8px; text-transform:uppercase">ADVANCED</div>
+          <div class="sidebar-title" id="pay-name">Clase Seleccionada</div>
+          <div style="font-size:.85rem; color:var(--text-muted); margin-bottom:1.2rem;" id="pay-time">📅 Hoy, 19:30h</div>
+          
+          <div class="price-breakdown">
+            <div class="price-row"><span style="color:var(--text-muted)">Precio Base Clase</span><span id="pay-base">S/ 25.00</span></div>
+            <div class="price-row"><span style="color:var(--text-muted)">Gastos de Gestión</span><span>S/ 5.00</span></div>
+            <div class="total-row"><span>Total</span><span id="pay-total">S/ 30.00</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════════════
+       PANTALLA: CONFIRMACIÓN EXITOSA
+       ══════════════════════════════════════════ -->
+  <div id="screen-confirm" class="screen">
+    <div class="page" style="text-align:center">
+      <div style="font-size:4rem; margin-bottom:0.5rem">🎉</div>
+      <h1 class="page-title" style="margin-bottom:.5rem">¡CLASE <span>RESERVADA!</span></h1>
+      <p style="color:var(--text-muted); margin-bottom:3rem">Tu lugar en la pista está asegurado. Revisa tu código QR de acceso oficial.</p>
+
+      <div class="confirm-wrap">
+        <div class="confirm-card">
+          <div class="confirm-header">
+            <span class="confirm-logo">DanceFit</span>
+            <span class="confirm-badge">REAL-TIME ✓</span>
+          </div>
+          <div class="confirm-body">
+            <div class="confirm-grid">
+              <div><div class="confirm-lbl">Clase</div><div class="confirm-val" style="font-family:'Playfair Display',serif; font-size:1.1rem" id="conf-name">Clase</div></div>
+              <div><div class="confirm-lbl">Instructor</div><div class="confirm-val" id="conf-inst">Instructor</div></div>
+              <div><div class="confirm-lbl">Fecha y Hora</div><div class="confirm-val" id="conf-time">Hoy, 19:30h</div></div>
+              <div><div class="confirm-lbl">Spot</div><div class="confirm-val accent" id="conf-spot">Spot #10</div></div>
+              <div><div class="confirm-lbl">Sede</div><div class="confirm-val">Norte – Studio A</div></div>
+              <div><div class="confirm-lbl">ID de Reserva</div><div class="confirm-val" style="font-size:.82rem" id="conf-id">DF-000000-TK</div></div>
+            </div>
+            
+            <div class="qr-box" style="max-width:160px">
+              <svg width="70" height="70" viewBox="0 0 80 80" id="qrConfirm"></svg>
+              <div class="qr-label">QR OFICIAL DE ACCESO</div>
+            </div>
+            
+            <div class="confirm-info">
+              <div class="confirm-info-title">RECOMENDACIONES DE INGRESO</div>
+              <div class="confirm-info-text">Llega 10 minutos antes de la hora para el registro biométrico. Muestra este código QR en la tablet de recepción. ¡Disfruta el ritmo!</div>
+            </div>
+            
+            <div class="confirm-actions">
+              <button class="btn-primary" onclick="goTo('home')">Volver al Inicio →</button>
+              <button class="btn-secondary" onclick="goTo('reservas')">Ver Mis Reservas</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════════════
+       PANTALLA: HISTORIAL DE RESERVAS (MIS RESERVAS)
+       ══════════════════════════════════════════ -->
+  <div id="screen-reservas" class="screen">
+    <div class="page" style="max-width:1100px;">
+      <h1 class="page-title">MIS <span>RESERVAS</span></h1>
+      <p class="page-sub">Monitorea tus clases y asiste a tus entrenamientos programados.</p>
+
+      <div class="week-grid" id="weekGridInner" style="min-height:300px;">
+        <!-- Se rellena dinámicamente con las reservas extraídas de Supabase -->
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════════════
+       PANTALLA: PANEL DE ADMINISTRADOR (EXCLUSIVE DASHBOARD)
+       ══════════════════════════════════════════ -->
+  <div id="screen-admin" class="screen">
+    <div class="page" style="max-width: 1200px;">
+      <h1 class="page-title">Panel de <span>Administración</span></h1>
+      <p class="page-sub">Gestiona la cartelera de clases de baile, audita las reservas de Yape y analiza el negocio.</p>
+
+      <!-- Panel de Métricas de Negocio -->
+      <div class="admin-metrics" id="adminMetrics">
+        <!-- Relleno dinámico: Ingresos, Clase Popular, Ocupación -->
+      </div>
+
+      <div class="admin-layout">
+        <!-- Formulario para Crear Clases -->
+        <div class="admin-form-card">
+          <h3 style="font-family:'Playfair Display', serif; font-size:1.35rem; margin-bottom:1.2rem; border-bottom:1px solid var(--border); padding-bottom:8px;">Programar Clase</h3>
+          <form id="adminClassForm" onsubmit="handleCreateClassSubmission(event)">
+            <div class="field" style="margin-bottom:1rem;">
+              <label class="lbl" for="adminClassName">Nombre de Clase</label>
+              <input class="inp" id="adminClassName" type="text" placeholder="Ej. Urban Dance" required>
+            </div>
+            
+            <div class="field" style="margin-bottom:1rem;">
+              <label class="lbl" for="adminClassStyle">Estilo de Baile</label>
+              <select class="inp" id="adminClassStyle" required>
+                <option value="Reggaetón">Reggaetón</option>
+                <option value="Salsa">Salsa</option>
+                <option value="Bachata">Bachata</option>
+                <option value="Urbano">Urbano</option>
+                <option value="Funcional">Funcional</option>
+              </select>
+            </div>
+
+            <div class="field" style="margin-bottom:1rem;">
+              <label class="lbl" for="adminClassLevel">Nivel de Intensidad</label>
+              <select class="inp" id="adminClassLevel" required>
+                <option value="BEGINNER">Principiante (BEGINNER)</option>
+                <option value="OPEN LEVEL">Nivel Abierto (OPEN LEVEL)</option>
+                <option value="ADVANCED">Avanzado (ADVANCED)</option>
+                <option value="SPECIAL WORKSHOP">Masterclass (SPECIAL WORKSHOP)</option>
+              </select>
+            </div>
+
+            <div class="field" style="margin-bottom:1rem;">
+              <label class="lbl" for="adminClassPrice">Precio Clase (S/)</label>
+              <input class="inp" id="adminClassPrice" type="number" value="25" min="10" required>
+            </div>
+
+            <div class="field" style="margin-bottom:1rem;">
+              <label class="lbl" for="adminClassDuration">Duración (ej. "60 min")</label>
+              <input class="inp" id="adminClassDuration" type="text" placeholder="Ej. 60 min" required>
+            </div>
+
+            <div class="field" style="margin-bottom:1rem;">
+              <label class="lbl" for="adminClassTime">Hora de Inicio (ej. "18:30")</label>
+              <input class="inp" id="adminClassTime" type="text" placeholder="Ej. 18:30" required>
+            </div>
+
+            <div class="field" style="margin-bottom:1rem;">
+              <label class="lbl" for="adminClassInstructor">Instructor</label>
+              <input class="inp" id="adminClassInstructor" type="text" placeholder="Ej. Marcus Blaze" required>
+            </div>
+
+            <div class="field" style="margin-bottom:1rem;">
+              <label class="lbl" for="adminClassInstructorRole">Cargo del Instructor</label>
+              <input class="inp" id="adminClassInstructorRole" type="text" placeholder="Ej. Salsa Pro Coach" required>
+            </div>
+
+            <div class="field" style="margin-bottom:1rem;">
+              <label class="lbl" for="adminClassTheme">Temática / Estética</label>
+              <input class="inp" id="adminClassTheme" type="text" placeholder="Ej. Cyber Vibe" required>
+            </div>
+
+            <div class="field" style="margin-bottom:1rem;">
+              <label class="lbl" for="adminClassEmoji">Emoji Representativo</label>
+              <input class="inp" id="adminClassEmoji" type="text" placeholder="Ej. 🔥, 💃, 🌹" required maxlength="2">
+            </div>
+
+            <button class="btn-primary" id="adminBtnCreateClass" style="width:100%; padding:12px; margin-top:0.8rem;" type="submit">
+              Crear y Publicar Clase →
+            </button>
+          </form>
+        </div>
+
+        <!-- Tabla de Reservas del Sistema -->
+        <div class="admin-table-card">
+          <h3 style="font-family:'Playfair Display', serif; font-size:1.35rem; margin-bottom:1.5rem;">Auditoría de Reservas</h3>
+          <table class="admin-table">
+            <thead>
+              <tr>
+                <th>Ticket ID</th>
+                <th>Cliente</th>
+                <th>Clase / Profesor</th>
+                <th style="text-align: center;">Spot</th>
+                <th>Yape Pago</th>
+                <th>Fecha Compra</th>
+              </tr>
+            </thead>
+            <tbody id="adminReservasTableBody">
+              <!-- Relleno dinámico de reservas globales -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── CONTROLADORES SCRIPT INYECTADOS ── -->
+  <!-- Supabase JS Client library via CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  
+  <!-- Configuración modular del entorno de Supabase -->
+  <script src="js/config.js"></script>
+  
+  <!-- Adaptador para conectar y recuperar datos de Supabase -->
+  <script src="js/supabase-db.js"></script>
+  
+  <!-- Módulos de lógica organizados -->
+  <script src="js/auth.js"></script>
+  <script src="js/client.js"></script>
+  <script src="js/admin.js"></script>
+  
+  <!-- Inicializador y Router unificador de pantallas -->
+  <script src="js/app.js"></script>
+</body>
+</html>
