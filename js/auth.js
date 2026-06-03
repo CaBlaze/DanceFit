@@ -25,9 +25,9 @@ async function loginUser(email, password) {
       throw new Error("El correo no se encuentra registrado en el sistema.");
     }
     
-    const expectedPass = user.role === 'admin' ? 'admin123' : 'cliente123';
+    const expectedPass = user.password || (user.role === 'admin' ? 'admin123' : 'cliente123');
     if (password !== expectedPass && password !== '123456') {
-      throw new Error("Contraseña incorrecta. (Tip: usa 'admin123' para admin y 'cliente123' para cliente)");
+      throw new Error("Contraseña incorrecta. (Tip: usa la contraseña con la que te registraste)");
     }
     
     localStorage.setItem("df_current_user", JSON.stringify(user));
@@ -69,7 +69,7 @@ async function loginUser(email, password) {
 }
 
 // Registrar usuario
-async function registerUser(email, password, name, dni) {
+async function registerUser(email, password, name, dni, role = 'client') {
   if (isDemoMode) {
     const profiles = JSON.parse(localStorage.getItem("df_profiles_demo") || "[]");
     
@@ -85,7 +85,8 @@ async function registerUser(email, password, name, dni) {
       email: email.trim().toLowerCase(),
       name: name.trim(),
       dni: dni.trim(),
-      role: "client" // Solo se pueden registrar clientes desde la UI pública
+      role: role === 'admin' ? 'admin' : 'client',
+      password: password
     };
 
     profiles.push(newUser);
@@ -101,7 +102,8 @@ async function registerUser(email, password, name, dni) {
     options: {
       data: {
         name: name.trim(),
-        dni: dni.trim()
+        dni: dni.trim(),
+        role: role === 'admin' ? 'admin' : 'client'
       }
     }
   });
@@ -113,7 +115,7 @@ async function registerUser(email, password, name, dni) {
     email: email.trim(),
     name: name.trim(),
     dni: dni.trim(),
-    role: "client"
+    role: role === 'admin' ? 'admin' : 'client'
   };
 
   // Guardamos sesión activa

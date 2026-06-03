@@ -4,12 +4,20 @@ let dbClient = null;
 let isDemoMode = true;
 
 // Datos por defecto para el Modo Demo Local
+const DEFAULT_INSTRUCTORS = [
+  { id: 1, name: "Elena Márquez", role: "Instructora Principal" },
+  { id: 2, name: "Carlos Rivera", role: "Salsa Pro Coach" },
+  { id: 3, name: "Sofia Chen", role: "Fitness Specialist" },
+  { id: 4, name: "Marco & Estela", role: "International Artists" },
+  { id: 5, name: "Leo Cruz", role: "Urban Specialist" }
+];
+
 const DEFAULT_CLASSES = [
-  { id: 1, name: "Reggaetón Energy", level: "ADVANCED", level_color: "#9b5de5", time: "19:30", instructor: "Elena Márquez", role: "Instructora Principal", theme: "Neón Night", style: "Reggaetón", price: 25, duration: "90 min", emoji: "🔥" },
-  { id: 2, name: "Salsa Foundation", level: "BEGINNER", level_color: "#00b4d8", time: "18:00", instructor: "Carlos Rivera", role: "Salsa Pro Coach", theme: "Classic Casino", style: "Salsa", price: 25, duration: "60 min", emoji: "💃" },
-  { id: 3, name: "D-Fit Funcional", level: "OPEN LEVEL", level_color: "#2dc653", time: "07:00", instructor: "Sofia Chen", role: "Fitness Specialist", theme: "Power Beat", style: "Funcional", price: 25, duration: "60 min", emoji: "⚡" },
-  { id: 4, name: "Master Bachata Sensual", level: "SPECIAL WORKSHOP", level_color: "#f4a261", time: "21:00", instructor: "Marco & Estela", role: "International Artists", theme: "Midnight Romance", style: "Bachata", price: 50, duration: "120 min", emoji: "🌹" },
-  { id: 5, name: "Urban Core", level: "OPEN LEVEL", level_color: "#2dc653", time: "17:00", instructor: "Leo Cruz", role: "Urban Specialist", theme: "Street Vibe", style: "Urbano", price: 25, duration: "90 min", emoji: "🎤" },
+  { id: 1, name: "Reggaetón Energy", level: "ADVANCED", level_color: "#9b5de5", time: "19:30", instructor_id: 1, theme: "Neón Night", style: "Reggaetón", price: 25, duration: "90 min", emoji: "🔥" },
+  { id: 2, name: "Salsa Foundation", level: "BEGINNER", level_color: "#00b4d8", time: "18:00", instructor_id: 2, theme: "Classic Casino", style: "Salsa", price: 25, duration: "60 min", emoji: "💃" },
+  { id: 3, name: "D-Fit Funcional", level: "OPEN LEVEL", level_color: "#2dc653", time: "07:00", instructor_id: 3, theme: "Power Beat", style: "Funcional", price: 25, duration: "60 min", emoji: "⚡" },
+  { id: 4, name: "Master Bachata Sensual", level: "SPECIAL WORKSHOP", level_color: "#f4a261", time: "21:00", instructor_id: 4, theme: "Midnight Romance", style: "Bachata", price: 50, duration: "120 min", emoji: "🌹" },
+  { id: 5, name: "Urban Core", level: "OPEN LEVEL", level_color: "#2dc653", time: "17:00", instructor_id: 5, theme: "Street Vibe", style: "Urbano", price: 25, duration: "90 min", emoji: "🎤" },
 ];
 
 const DEFAULT_RESERVATIONS = [
@@ -20,14 +28,26 @@ const DEFAULT_RESERVATIONS = [
 
 // Inicializar base de datos
 function initDB() {
+  console.log("🔍 [DEBUG] SUPABASE_URL leído:", SUPABASE_URL);
+  console.log("🔍 [DEBUG] SUPABASE_ANON_KEY leído:", SUPABASE_ANON_KEY);
+  console.log("🔍 [DEBUG] Tipo de 'supabase' global:", typeof supabase);
+
   const isDefaultUrl = SUPABASE_URL.includes("tu-proyecto") || !SUPABASE_URL.startsWith("http");
   const isDefaultKey = SUPABASE_ANON_KEY.includes("tu-anon-key");
+  const isSupabaseUndefined = typeof supabase === 'undefined';
 
-  if (isDefaultUrl || isDefaultKey || typeof supabase === 'undefined') {
+  console.log("🔍 [DEBUG] isDefaultUrl:", isDefaultUrl);
+  console.log("🔍 [DEBUG] isDefaultKey:", isDefaultKey);
+  console.log("🔍 [DEBUG] isSupabaseUndefined:", isSupabaseUndefined);
+
+  if (isDefaultUrl || isDefaultKey || isSupabaseUndefined) {
     console.warn("⚠️ DanceFit Studio: Usando Modo Demo Local (Base de datos local en localStorage). Para conectar con Supabase real, configura js/config.js");
     isDemoMode = true;
     
     // Rellenar localStorage si está vacío
+    if (!localStorage.getItem("df_instructors")) {
+      localStorage.setItem("df_instructors", JSON.stringify(DEFAULT_INSTRUCTORS));
+    }
     if (!localStorage.getItem("df_classes")) {
       localStorage.setItem("df_classes", JSON.stringify(DEFAULT_CLASSES));
     }
@@ -46,23 +66,84 @@ function initDB() {
   }
 }
 
+// ── APIS DE INSTRUCTORES ──
+
+async function getInstructors() {
+  if (isDemoMode) {
+    return JSON.parse(localStorage.getItem("df_instructors") || "[]");
+  }
+
+  const { data, error } = await dbClient
+    .from('instructors')
+    .select('*')
+    .order('name', { ascending: true });
+
+  if (error) {
+    console.error("Error al obtener instructores de Supabase:", error);
+    throw error;
+  }
+  return data;
+}
+
+async function createInstructor(instructorData) {
+  if (isDemoMode) {
+    const localInst = JSON.parse(localStorage.getItem("df_instructors") || "[]");
+    
+    const existe = localInst.some(i => i.name.toLowerCase() === instructorData.name.toLowerCase());
+    if (existe) {
+      throw new Error("El instructor ya está registrado.");
+    }
+
+    const newId = localInst.length > 0 ? Math.max(...localInst.map(i => i.id)) + 1 : 1;
+    const newInst = { id: newId, ...instructorData, created_at: new Date().toISOString() };
+    localInst.push(newInst);
+    localStorage.setItem("df_instructors", JSON.stringify(localInst));
+    return newInst;
+  }
+
+  const { data, error } = await dbClient
+    .from('instructors')
+    .insert([instructorData])
+    .select();
+
+  if (error) {
+    console.error("Error al crear instructor en Supabase:", error);
+    throw error;
+  }
+  return data[0];
+}
+
 // ── APIS DE CLASES ──
 
 async function getClasses() {
   if (isDemoMode) {
-    return JSON.parse(localStorage.getItem("df_classes") || "[]");
+    const classes = JSON.parse(localStorage.getItem("df_classes") || "[]");
+    const instructors = JSON.parse(localStorage.getItem("df_instructors") || "[]");
+    return classes.map(c => {
+      const inst = instructors.find(i => Number(i.id) === Number(c.instructor_id)) || {};
+      return {
+        ...c,
+        instructor: inst.name || 'Instructor',
+        role: inst.role || 'Instructor'
+      };
+    });
   }
   
   const { data, error } = await dbClient
     .from('classes')
-    .select('*')
+    .select('*, instructors:instructor_id(*)')
     .order('time', { ascending: true });
     
   if (error) {
     console.error("Error al obtener clases de Supabase:", error);
     throw error;
   }
-  return data;
+  
+  return data.map(c => ({
+    ...c,
+    instructor: c.instructors ? c.instructors.name : 'Instructor',
+    role: c.instructors ? c.instructors.role : 'Instructor'
+  }));
 }
 
 async function createClass(classData) {
@@ -147,12 +228,19 @@ async function getReservationsForUser(userId) {
   if (isDemoMode) {
     const localRes = JSON.parse(localStorage.getItem("df_reservations") || "[]");
     const localClasses = JSON.parse(localStorage.getItem("df_classes") || "[]");
+    const localInstructors = JSON.parse(localStorage.getItem("df_instructors") || "[]");
     
     // Cruzar reservas con clases locales
     return localRes
       .filter(r => r.profile_id === userId)
       .map(r => {
-        const cls = localClasses.find(c => Number(c.id) === Number(r.class_id)) || {};
+        const rawCls = localClasses.find(c => Number(c.id) === Number(r.class_id)) || {};
+        const inst = localInstructors.find(i => Number(i.id) === Number(rawCls.instructor_id)) || {};
+        const cls = {
+          ...rawCls,
+          instructor: inst.name || 'Instructor',
+          role: inst.role || 'Instructor'
+        };
         return { ...r, classes: cls };
       })
       .sort((a,b) => new Date(b.created_at) - new Date(a.created_at));
@@ -160,7 +248,7 @@ async function getReservationsForUser(userId) {
 
   const { data, error } = await dbClient
     .from('reservations')
-    .select('*, classes:classes(*)')
+    .select('*, classes:classes(*, instructors:instructor_id(*))')
     .eq('profile_id', userId)
     .order('created_at', { ascending: false });
     
@@ -168,7 +256,17 @@ async function getReservationsForUser(userId) {
     console.error("Error al obtener reservas del usuario de Supabase:", error);
     throw error;
   }
-  return data;
+
+  return data.map(r => {
+    if (r.classes) {
+      r.classes = {
+        ...r.classes,
+        instructor: r.classes.instructors ? r.classes.instructors.name : 'Instructor',
+        role: r.classes.instructors ? r.classes.instructors.role : 'Instructor'
+      };
+    }
+    return r;
+  });
 }
 
 async function getAllReservationsAdmin() {
@@ -176,9 +274,16 @@ async function getAllReservationsAdmin() {
     const localRes = JSON.parse(localStorage.getItem("df_reservations") || "[]");
     const localClasses = JSON.parse(localStorage.getItem("df_classes") || "[]");
     const localProfiles = JSON.parse(localStorage.getItem("df_profiles_demo") || "[]");
+    const localInstructors = JSON.parse(localStorage.getItem("df_instructors") || "[]");
     
     return localRes.map(r => {
-      const cls = localClasses.find(c => Number(c.id) === Number(r.class_id)) || {};
+      const rawCls = localClasses.find(c => Number(c.id) === Number(r.class_id)) || {};
+      const inst = localInstructors.find(i => Number(i.id) === Number(rawCls.instructor_id)) || {};
+      const cls = {
+        ...rawCls,
+        instructor: inst.name || 'Instructor',
+        role: inst.role || 'Instructor'
+      };
       const prof = localProfiles.find(p => p.id === r.profile_id) || { name: "Cliente Demo", dni: "99887766" };
       return { ...r, classes: cls, profiles: prof };
     }).sort((a,b) => new Date(b.created_at) - new Date(a.created_at));
@@ -186,14 +291,72 @@ async function getAllReservationsAdmin() {
 
   const { data, error } = await dbClient
     .from('reservations')
-    .select('*, classes:classes(*), profiles:profiles(*)')
+    .select('*, classes:classes(*, instructors:instructor_id(*)), profiles:profiles(*)')
     .order('created_at', { ascending: false });
     
   if (error) {
     console.error("Error al obtener todas las reservas en Supabase:", error);
     throw error;
   }
-  return data;
+
+  return data.map(r => {
+    if (r.classes) {
+      r.classes = {
+        ...r.classes,
+        instructor: r.classes.instructors ? r.classes.instructors.name : 'Instructor',
+        role: r.classes.instructors ? r.classes.instructors.role : 'Instructor'
+      };
+    }
+    return r;
+  });
+}
+
+// ── APIS DE ELIMINACIÓN Y CANCELACIÓN ──
+
+async function cancelReservation(resId) {
+  if (isDemoMode) {
+    let localRes = JSON.parse(localStorage.getItem("df_reservations") || "[]");
+    localRes = localRes.filter(r => r.id !== resId);
+    localStorage.setItem("df_reservations", JSON.stringify(localRes));
+    return true;
+  }
+
+  const { error } = await dbClient
+    .from('reservations')
+    .delete()
+    .eq('id', resId);
+
+  if (error) {
+    console.error("Error al cancelar reserva en Supabase:", error);
+    throw error;
+  }
+  return true;
+}
+
+async function deleteClass(classId) {
+  if (isDemoMode) {
+    let localClasses = JSON.parse(localStorage.getItem("df_classes") || "[]");
+    localClasses = localClasses.filter(c => Number(c.id) !== Number(classId));
+    localStorage.setItem("df_classes", JSON.stringify(localClasses));
+
+    // También eliminamos las reservas asociadas a esta clase
+    let localRes = JSON.parse(localStorage.getItem("df_reservations") || "[]");
+    localRes = localRes.filter(r => Number(r.class_id) !== Number(classId));
+    localStorage.setItem("df_reservations", JSON.stringify(localRes));
+
+    return true;
+  }
+
+  const { error } = await dbClient
+    .from('classes')
+    .delete()
+    .eq('id', classId);
+
+  if (error) {
+    console.error("Error al eliminar clase en Supabase:", error);
+    throw error;
+  }
+  return true;
 }
 
 // Inicializar en el script load

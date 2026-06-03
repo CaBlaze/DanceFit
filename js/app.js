@@ -202,7 +202,8 @@ function renderAuthScreen() {
         
         <div class="field">
           <label class="lbl" for="authPassword">Contraseña</label>
-          <input class="inp" id="authPassword" type="password" placeholder="••••••••" required autocomplete="current-password">
+          <input class="inp" id="authPassword" type="password" placeholder="••••••••" required autocomplete="current-password" minlength="6">
+          ${!isLogin ? `<div class="help-text" style="margin-top: 5px; font-size: 0.74rem;">La contraseña debe tener al menos 6 caracteres.</div>` : ''}
         </div>
 
         <button class="btn-primary" id="authSubmitBtn" style="width: 100%; padding: 15px; margin-top: 1rem;" type="submit">
@@ -258,7 +259,8 @@ async function handleAuthSubmit(e) {
     } else {
       const name = document.getElementById('authName').value;
       const dni = document.getElementById('authDni').value;
-      const user = await registerUser(email, password, name, dni);
+      const role = 'client'; // El registro público es exclusivo para alumnos/clientes
+      const user = await registerUser(email, password, name, dni, role);
       showToast(`🎉 ¡Cuenta creada con éxito! Bienvenido, ${user.name}.`);
       goTo('home');
     }

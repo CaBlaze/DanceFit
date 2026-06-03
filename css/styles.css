@@ -709,10 +709,9 @@ input.inp.error { border-color: #e63946; }
 /* ── AGENDA Y VISTA GENERAL DE RESERVAS CLIENTE ── */
 .week-grid {
   display: grid;
-  grid-template-columns: repeat(7, 1fr);
-  gap: 12px;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 16px;
   margin-top: 1.8rem;
-  min-width: 780px;
 }
 .day-col { display: flex; flex-direction: column; gap: 12px; }
 .day-header { text-align: center; margin-bottom: 6px; }

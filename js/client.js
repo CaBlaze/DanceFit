@@ -388,14 +388,36 @@ async function renderClientReservations() {
         <div class="my-res-tag" style="margin-top:6px;border-top:1px dashed var(--border);padding-top:8px;">
           🎟️ Spot #${res.spot_number} (Fila ${row}, Spot ${col})
         </div>
-        <div style="font-size:0.65rem;color:var(--text-muted);margin-top:4px;">
+        <div style="font-size:0.65rem;color:var(--text-muted);margin-top:4px;margin-bottom:12px;">
           Reservado el ${dateFormatted} · ID: ${res.id.slice(0, 13)}
         </div>
+        <button class="cancel-res-btn" data-id="${res.id}" style="width: 100%; border: 1px solid var(--border); padding: 8px; border-radius: 6px; font-size: 0.78rem; font-weight: 700; color: #e63946; background: rgba(230,57,70,0.06); transition: all 0.2s;">
+          Cancelar Reserva ✕
+        </button>
       `;
+      
+      card.querySelector('.cancel-res-btn').onclick = (e) => {
+        e.stopPropagation();
+        handleCancelReservation(res.id, cls.name || 'Clase');
+      };
+      
       container.appendChild(card);
     });
 
   } catch (err) {
     container.innerHTML = `<p style="color:#e63946;grid-column:1/-1;text-align:center;padding:2rem">Error al obtener historial: ${err.message}</p>`;
+  }
+}
+
+async function handleCancelReservation(resId, className) {
+  if (confirm(`¿Estás seguro que deseas cancelar tu reserva para la clase "${className}"?\nEsta acción liberará tu spot en la pista y es irreversible.`)) {
+    try {
+      showToast("Cancelando reserva...");
+      await cancelReservation(resId);
+      showToast("✅ Reserva cancelada correctamente.");
+      renderClientReservations();
+    } catch (err) {
+      showToast(`❌ Error al cancelar reserva: ${err.message}`);
+    }
   }
 }
