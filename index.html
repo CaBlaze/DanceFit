@@ -333,11 +333,12 @@
         <div class="admin-form-card">
           <h3 style="font-family:'Playfair Display', serif; font-size:1.35rem; margin-bottom:1.2rem; border-bottom:1px solid var(--border); padding-bottom:8px;">Programar Clase</h3>
           <form id="adminClassForm" onsubmit="handleCreateClassSubmission(event)">
+
             <div class="field" style="margin-bottom:1rem;">
               <label class="lbl" for="adminClassName">Nombre de Clase</label>
               <input class="inp" id="adminClassName" type="text" placeholder="Ej. Urban Dance" required>
             </div>
-            
+
             <div class="field" style="margin-bottom:1rem;">
               <label class="lbl" for="adminClassStyle">Estilo de Baile</label>
               <select class="inp" id="adminClassStyle" required>
@@ -361,37 +362,40 @@
 
             <div class="field" style="margin-bottom:1rem;">
               <label class="lbl" for="adminClassPrice">Precio Clase (S/)</label>
-              <input class="inp" id="adminClassPrice" type="number" value="25" min="10" required>
+              <input class="inp" id="adminClassPrice" type="number" value="25" min="1" step="0.50" required>
+            </div>
+
+            <!-- Fecha y Hora en paralelo -->
+            <div style="display:grid; grid-template-columns:1fr 1fr; gap:0.75rem; margin-bottom:1rem;">
+              <div class="field">
+                <label class="lbl" for="adminClassDate">📅 Fecha de la Clase</label>
+                <input class="inp" id="adminClassDate" type="date" required>
+              </div>
+              <div class="field">
+                <label class="lbl" for="adminClassTime">🕐 Hora de Inicio</label>
+                <input class="inp" id="adminClassTime" type="time" required>
+              </div>
             </div>
 
             <div class="field" style="margin-bottom:1rem;">
-              <label class="lbl" for="adminClassDuration">Duración (ej. "60 min")</label>
-              <input class="inp" id="adminClassDuration" type="text" placeholder="Ej. 60 min" required>
-            </div>
-
-            <div class="field" style="margin-bottom:1rem;">
-              <label class="lbl" for="adminClassTime">Hora de Inicio (ej. "18:30")</label>
-              <input class="inp" id="adminClassTime" type="text" placeholder="Ej. 18:30" required>
+              <label class="lbl" for="adminClassDuration">Duración de la Clase</label>
+              <select class="inp" id="adminClassDuration" required>
+                <option value="45 min">45 minutos</option>
+                <option value="60 min" selected>60 minutos</option>
+                <option value="75 min">75 minutos</option>
+                <option value="90 min">90 minutos</option>
+                <option value="120 min">2 horas (Masterclass)</option>
+              </select>
             </div>
 
             <div class="field" style="margin-bottom:1rem;">
               <label class="lbl" for="adminClassInstructor">Instructor</label>
-              <input class="inp" id="adminClassInstructor" type="text" placeholder="Ej. Marcus Blaze" required>
-            </div>
-
-            <div class="field" style="margin-bottom:1rem;">
-              <label class="lbl" for="adminClassInstructorRole">Cargo del Instructor</label>
-              <input class="inp" id="adminClassInstructorRole" type="text" placeholder="Ej. Salsa Pro Coach" required>
+              <input class="inp" id="adminClassInstructor" type="text" placeholder="Ej. Elena Márquez" required>
             </div>
 
             <div class="field" style="margin-bottom:1rem;">
               <label class="lbl" for="adminClassTheme">Temática / Estética</label>
               <input class="inp" id="adminClassTheme" type="text" placeholder="Ej. Cyber Vibe" required>
-            </div>
-
-            <div class="field" style="margin-bottom:1rem;">
-              <label class="lbl" for="adminClassEmoji">Emoji Representativo</label>
-              <input class="inp" id="adminClassEmoji" type="text" placeholder="Ej. 🔥, 💃, 🌹" required maxlength="2">
             </div>
 
             <button class="btn-primary" id="adminBtnCreateClass" style="width:100%; padding:12px; margin-top:0.8rem;" type="submit">

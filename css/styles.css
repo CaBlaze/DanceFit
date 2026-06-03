@@ -830,3 +830,12 @@ footer {
   z-index: 100;
 }
 [data-tooltip]:hover::after { opacity: 1; }
+
+/* ── ANIMACIONES DE ADMIN FORM ── */
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+@keyframes fadeInUp {
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: translateY(0); }
+}

@@ -141,8 +141,8 @@ async function getClasses() {
   
   return data.map(c => ({
     ...c,
-    instructor: c.instructors ? c.instructors.name : 'Instructor',
-    role: c.instructors ? c.instructors.role : 'Instructor'
+    instructor: c.instructors ? c.instructors.name : (c.instructor || 'Instructor'),
+    role: c.instructors ? c.instructors.role : (c.role || 'Instructor')
   }));
 }
 
@@ -261,8 +261,8 @@ async function getReservationsForUser(userId) {
     if (r.classes) {
       r.classes = {
         ...r.classes,
-        instructor: r.classes.instructors ? r.classes.instructors.name : 'Instructor',
-        role: r.classes.instructors ? r.classes.instructors.role : 'Instructor'
+        instructor: r.classes.instructors ? r.classes.instructors.name : (r.classes.instructor || 'Instructor'),
+        role: r.classes.instructors ? r.classes.instructors.role : (r.classes.role || 'Instructor')
       };
     }
     return r;
@@ -303,8 +303,8 @@ async function getAllReservationsAdmin() {
     if (r.classes) {
       r.classes = {
         ...r.classes,
-        instructor: r.classes.instructors ? r.classes.instructors.name : 'Instructor',
-        role: r.classes.instructors ? r.classes.instructors.role : 'Instructor'
+        instructor: r.classes.instructors ? r.classes.instructors.name : (r.classes.instructor || 'Instructor'),
+        role: r.classes.instructors ? r.classes.instructors.role : (r.classes.role || 'Instructor')
       };
     }
     return r;

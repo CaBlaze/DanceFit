@@ -139,29 +139,52 @@ async function renderReservasAdminTable() {
 async function handleCreateClassSubmission(event) {
   event.preventDefault();
 
-  const name = document.getElementById('adminClassName').value.trim();
-  const style = document.getElementById('adminClassStyle').value;
-  const level = document.getElementById('adminClassLevel').value;
-  const price = Number(document.getElementById('adminClassPrice').value);
-  const duration = document.getElementById('adminClassDuration').value.trim();
-  const time = document.getElementById('adminClassTime').value;
+  const form       = document.getElementById('adminClassForm');
+  const name       = document.getElementById('adminClassName').value.trim();
+  const style      = document.getElementById('adminClassStyle').value;
+  const level      = document.getElementById('adminClassLevel').value;
+  const price      = Number(document.getElementById('adminClassPrice').value);
+  const classDate  = document.getElementById('adminClassDate').value;    // YYYY-MM-DD
+  const time       = document.getElementById('adminClassTime').value;    // HH:MM
+  const duration   = document.getElementById('adminClassDuration').value;
   const instructor = document.getElementById('adminClassInstructor').value.trim();
-  const role = document.getElementById('adminClassInstructorRole').value.trim();
-  const theme = document.getElementById('adminClassTheme').value.trim();
-  const emoji = document.getElementById('adminClassEmoji').value.trim();
+  const theme      = document.getElementById('adminClassTheme').value.trim();
 
-  // Validaciones
-  if (!name || !duration || !time || !instructor || !role || !theme || !emoji) {
-    showToast("⚠️ Completa todos los campos obligatorios del formulario");
+  // ── Limpiar banner previo si existe
+  const oldBanner = document.getElementById('adminClassBanner');
+  if (oldBanner) oldBanner.remove();
+
+  // ── Validación explícita con mensajes en pantalla
+  if (!name || !classDate || !time || !instructor || !theme) {
+    showAdminBanner('error', '⚠️ Completa todos los campos antes de publicar la clase.');
     return;
   }
 
-  // Determinar color de nivel
-  let level_color = "#2dc653"; // default open level
-  if (level === 'BEGINNER') level_color = "#00b4d8";
-  if (level === 'ADVANCED') level_color = "#9b5de5";
-  if (level === 'SPECIAL WORKSHOP') level_color = "#f4a261";
+  // ── Color según nivel
+  const levelColors = {
+    'BEGINNER':         '#00b4d8',
+    'OPEN LEVEL':       '#2dc653',
+    'ADVANCED':         '#9b5de5',
+    'SPECIAL WORKSHOP': '#f4a261'
+  };
+  const level_color = levelColors[level] || '#2dc653';
 
+  // ── Emoji automático por estilo
+  const styleEmojis = {
+    'Reggaetón': '🔥',
+    'Salsa':     '💃',
+    'Bachata':   '🌹',
+    'Urbano':    '🎤',
+    'Funcional': '⚡'
+  };
+  const emoji = styleEmojis[style] || '🎵';
+
+  // ── Payload para la BD
+  // NOTA: La tabla classes tiene instructor_id (FK) en Supabase.
+  // Para mantener compatibilidad con el modo demo y el JOIN de getClasses(),
+  // se guarda instructor como texto en demo y como campo extra en Supabase.
+  // Si tu esquema NO tiene columna "instructor" en classes, el sistema
+  // usará el modo demo correctamente igual.
   const classPayload = {
     name,
     style,
@@ -170,34 +193,89 @@ async function handleCreateClassSubmission(event) {
     price,
     duration,
     time,
-    instructor,
-    role,
     theme,
     emoji,
-    class_date: new Date().toISOString().split('T')[0] // hoy
+    class_date: classDate,
+    instructor,           // Usado en modo demo; en Supabase real usar instructor_id
+    role: instructor      // Fallback para compatibilidad con getClasses()
   };
 
   const btn = document.getElementById('adminBtnCreateClass');
   btn.disabled = true;
-  btn.textContent = "Guardando Clase...";
+  btn.innerHTML = `<span style="display:inline-flex;align-items:center;gap:8px;">
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="animation:spin 0.8s linear infinite"><path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/></svg>
+    Publicando clase...
+  </span>`;
 
   try {
-    await createClass(classPayload);
-    showToast("🎉 ¡Clase creada y publicada con éxito!");
+    const created = await createClass(classPayload);
     
-    // Resetear formulario
-    document.getElementById('adminClassForm').reset();
-    
-    // Recargar métricas y listados locales si corresponde
+    // ── Resetear todos los campos del formulario
+    form.reset();
+
+    // ── Mostrar banner de confirmación con detalles de la clase
+    const levelLabel = {
+      'BEGINNER': 'Principiante', 'OPEN LEVEL': 'Nivel Abierto',
+      'ADVANCED': 'Avanzado', 'SPECIAL WORKSHOP': 'Masterclass'
+    }[level] || level;
+
+    const dateDisplay = new Date(classDate + 'T12:00:00').toLocaleDateString('es-ES', {
+      weekday: 'long', day: 'numeric', month: 'long'
+    });
+
+    showAdminBanner('success', `
+      <div style="font-size:1.4rem;margin-bottom:4px;">${emoji} ¡Clase publicada con éxito!</div>
+      <div style="font-size:0.85rem;opacity:0.9;line-height:1.6;">
+        <strong>${name}</strong> · ${style} · ${levelLabel}<br>
+        📅 ${dateDisplay} a las ${time}h · ⏱ ${duration}<br>
+        👤 ${instructor} · 🎨 Temática: ${theme}
+      </div>
+    `);
+
+    // ── Recargar métricas del dashboard
     calculateAdminMetrics();
     renderReservasAdminTable();
-    
-    // Desplazarse arriba suavemente
-    window.scrollTo({ top: 0, behavior: 'smooth' });
+
   } catch (err) {
-    showToast(`❌ Error al crear la clase: ${err.message}`);
+    console.error("❌ Error al crear clase:", err);
+    showAdminBanner('error', `❌ No se pudo publicar la clase: ${err.message}`);
   } finally {
     btn.disabled = false;
     btn.textContent = "Crear y Publicar Clase →";
+  }
+}
+
+// ── BANNER DE FEEDBACK DENTRO DEL FORMULARIO ADMIN ──
+function showAdminBanner(type, html) {
+  const isSuccess = type === 'success';
+  const banner = document.createElement('div');
+  banner.id = 'adminClassBanner';
+  banner.style.cssText = `
+    margin-top: 1rem;
+    padding: 1rem 1.2rem;
+    border-radius: 10px;
+    font-size: 0.88rem;
+    font-weight: 500;
+    line-height: 1.5;
+    border-left: 4px solid ${isSuccess ? '#2dc653' : '#e63946'};
+    background: ${isSuccess ? 'rgba(45,198,83,0.08)' : 'rgba(230,57,70,0.08)'};
+    color: ${isSuccess ? '#2dc653' : '#e63946'};
+    animation: fadeInUp 0.3s ease;
+  `;
+  banner.innerHTML = html;
+
+  // Insertar debajo del botón de submit
+  const btn = document.getElementById('adminBtnCreateClass');
+  btn.parentNode.insertBefore(banner, btn.nextSibling);
+
+  // Auto-ocultar el banner de éxito tras 8 segundos
+  if (isSuccess) {
+    setTimeout(() => {
+      if (banner.parentNode) {
+        banner.style.transition = 'opacity 0.5s';
+        banner.style.opacity = '0';
+        setTimeout(() => banner.remove(), 500);
+      }
+    }, 8000);
   }
 }
