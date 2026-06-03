@@ -231,14 +231,13 @@ function handleIdentContinue() {
 }
 
 // ── RENDERIZAR PASARELA DE PAGO Y QR YAPE ──
-function renderClientPayment() {
-  const cls = state.selectedClass;
-  if (!cls) {
-    goTo('home');
-    return;
-  }
+async function renderClientPayment() {
+  const cls  = state.selectedClass;
+  const user = getSessionUser();
+  if (!cls || !user) { goTo('home'); return; }
 
-  const total = Number(cls.price) + 5; // Costo base + gastos de gestión
+  // Sin cargo de gestión: precio final = precio de la clase
+  const price = Number(cls.price);
   
   document.getElementById('pay-emoji').textContent = cls.emoji;
   
@@ -249,9 +248,35 @@ function renderClientPayment() {
   
   document.getElementById('pay-name').textContent = cls.name;
   document.getElementById('pay-time').textContent = '📅 Hoy, ' + cls.time + 'h';
-  document.getElementById('pay-base').textContent = 'S/ ' + cls.price + '.00';
-  document.getElementById('pay-total').textContent = 'S/ ' + total + '.00';
-  document.getElementById('payBtnTotal').textContent = total + '.00';
+  document.getElementById('pay-base').textContent = 'S/ ' + price + '.00';
+  document.getElementById('pay-total').textContent = 'S/ ' + price + '.00';
+  document.getElementById('payBtnTotal').textContent = price + '.00';
+
+  // Mostrar saldo de créditos
+  const banner = document.getElementById('creditsBanner');
+  const balanceEl = document.getElementById('creditsBalanceDisplay');
+  const hintEl = document.getElementById('creditsHint');
+  const btnCredits = document.getElementById('btnPayCredits');
+
+  try {
+    const credits = await getCredits(user.id);
+    if (credits > 0) {
+      banner.style.display = 'block';
+      balanceEl.textContent = 'S/ ' + credits.toFixed(2);
+      if (credits >= price) {
+        hintEl.textContent = '✓ Tienes créditos suficientes para cubrir esta clase.';
+        btnCredits.disabled = false;
+      } else {
+        hintEl.textContent = `⚠️ Te faltan S/ ${(price - credits).toFixed(2)} para cubrir esta clase.`;
+        btnCredits.disabled = true;
+        btnCredits.style.opacity = '0.45';
+      }
+    } else {
+      banner.style.display = 'none';
+    }
+  } catch (_) {
+    banner.style.display = 'none';
+  }
 
   // Limpiar campos de pago
   document.getElementById('inputPhone').value = '';
@@ -283,38 +308,72 @@ function validateClientPayment() {
 // Ejecutar el yapeo y registrar reserva
 async function handlePaymentSubmission() {
   const user = getSessionUser();
-  const cls = state.selectedClass;
-  
+  const cls  = state.selectedClass;
   if (!user || !cls || !state.selectedSpot) return;
 
   const btnPay = document.getElementById('btnPay');
   btnPay.disabled = true;
-  btnPay.textContent = "Procesando Yape...";
+  btnPay.textContent = 'Procesando Yape...';
 
   const reservationPayload = {
-    profile_id: user.id,
-    class_id: cls.id,
-    spot_number: state.selectedSpot,
-    phone_yape: state.yapeData.phone,
-    code_yape: state.yapeData.code,
-    status: 'confirmed'
+    profile_id:     user.id,
+    class_id:       cls.id,
+    spot_number:    state.selectedSpot,
+    phone_yape:     state.yapeData.phone,
+    code_yape:      state.yapeData.code,
+    status:         'confirmed',
+    payment_method: 'yape'
   };
 
   try {
     const reservationResult = await createReservation(reservationPayload);
-    
-    state.reservation = {
-      id: reservationResult.id,
-      cls: cls,
-      spot: state.selectedSpot,
-      student: state.studentData
-    };
-    
+    state.reservation = { id: reservationResult.id, cls, spot: state.selectedSpot, student: state.studentData, paymentMethod: 'yape' };
     goTo('confirm');
   } catch (err) {
     showToast(`❌ Error al reservar: ${err.message}`);
     btnPay.disabled = false;
-    btnPay.innerHTML = `Yapear S/ <span id="payBtnTotal">${Number(cls.price) + 5}.00</span>`;
+    btnPay.innerHTML = `Yapear S/ <span id="payBtnTotal">${Number(cls.price)}.00</span>`;
+  }
+}
+
+// Pagar con créditos y registrar reserva
+async function handlePayWithCredits() {
+  const user = getSessionUser();
+  const cls  = state.selectedClass;
+  if (!user || !cls || !state.selectedSpot) return;
+
+  const price     = Number(cls.price);
+  const btnCredit = document.getElementById('btnPayCredits');
+  btnCredit.disabled  = true;
+  btnCredit.textContent = 'Procesando...';
+
+  try {
+    // 1. Descontar créditos (valida saldo suficiente internamente)
+    const newBalance = await deductCredits(user.id, price);
+
+    // 2. Actualizar sesión local
+    const updatedUser = { ...user, credits: newBalance };
+    localStorage.setItem('df_current_user', JSON.stringify(updatedUser));
+
+    // 3. Registrar reserva con payment_method = 'credits'
+    const reservationPayload = {
+      profile_id:     user.id,
+      class_id:       cls.id,
+      spot_number:    state.selectedSpot,
+      phone_yape:     '',
+      code_yape:      '',
+      status:         'confirmed',
+      payment_method: 'credits'
+    };
+    const reservationResult = await createReservation(reservationPayload);
+    state.reservation = { id: reservationResult.id, cls, spot: state.selectedSpot, student: state.studentData, paymentMethod: 'credits' };
+
+    showToast(`💰 Pagado con créditos. Saldo restante: S/ ${newBalance.toFixed(2)}`);
+    goTo('confirm');
+  } catch (err) {
+    showToast(`❌ ${err.message}`);
+    btnCredit.disabled  = false;
+    btnCredit.textContent = 'Pagar con Créditos ✓';
   }
 }
 
@@ -398,7 +457,7 @@ async function renderClientReservations() {
       
       card.querySelector('.cancel-res-btn').onclick = (e) => {
         e.stopPropagation();
-        handleCancelReservation(res.id, cls.name || 'Clase');
+        handleCancelReservation(res.id, cls.name || 'Clase', cls.price || 0);
       };
       
       container.appendChild(card);
@@ -409,15 +468,30 @@ async function renderClientReservations() {
   }
 }
 
-async function handleCancelReservation(resId, className) {
-  if (confirm(`¿Estás seguro que deseas cancelar tu reserva para la clase "${className}"?\nEsta acción liberará tu spot en la pista y es irreversible.`)) {
+async function handleCancelReservation(resId, className, classPrice) {
+  const price = Number(classPrice) || 0;
+  const priceMsg = price > 0 ? `\nRecibirás S/ ${price}.00 en créditos DanceFit.` : '';
+
+  if (confirm(`¿Cancelar tu reserva para "${className}"?${priceMsg}\nEsta acción liberará tu spot y es irreversible.`)) {
     try {
-      showToast("Cancelando reserva...");
+      showToast('Cancelando reserva...');
       await cancelReservation(resId);
-      showToast("✅ Reserva cancelada correctamente.");
+
+      // Agregar créditos equivalentes al precio de la clase
+      if (price > 0) {
+        const user = getSessionUser();
+        const newBalance = await addCredits(user.id, price);
+        // Actualizar sesión local
+        const updatedUser = { ...user, credits: newBalance };
+        localStorage.setItem('df_current_user', JSON.stringify(updatedUser));
+        showToast(`💰 +S/ ${price}.00 créditos añadidos. Saldo: S/ ${newBalance.toFixed(2)}`);
+      } else {
+        showToast('✅ Reserva cancelada correctamente.');
+      }
+
       renderClientReservations();
     } catch (err) {
-      showToast(`❌ Error al cancelar reserva: ${err.message}`);
+      showToast(`❌ Error al cancelar: ${err.message}`);
     }
   }
 }

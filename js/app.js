@@ -35,29 +35,32 @@ function goTo(screenId) {
   updateNavbarState(user, screenId);
 
   // Disparadores específicos por pantalla
-  if (screenId === 'home') renderClientHome();
-  if (screenId === 'spot') renderSpotSelection();
-  if (screenId === 'ident') renderClientIdentification();
+  if (screenId === 'home')    renderClientHome();
+  if (screenId === 'spot')    renderSpotSelection();
+  if (screenId === 'ident')   renderClientIdentification();
   if (screenId === 'payment') renderClientPayment();
   if (screenId === 'confirm') renderClientConfirm();
   if (screenId === 'reservas') renderClientReservations();
-  if (screenId === 'admin') renderAdminDashboard();
-  if (screenId === 'login') renderAuthScreen();
+  if (screenId === 'perfil')  renderProfileScreen();
+  if (screenId === 'admin')   renderAdminDashboard();
+  if (screenId === 'login')   renderAuthScreen();
 }
 
 // Actualizar botones y accesibilidad del navbar de acuerdo al rol del usuario
 function updateNavbarState(user, screenId) {
-  const btnHome = document.getElementById('nav-home');
+  const btnHome     = document.getElementById('nav-home');
   const btnReservas = document.getElementById('nav-reservas');
-  const btnAdmin = document.getElementById('nav-admin');
-  const btnLogout = document.getElementById('nav-logout');
+  const btnPerfil   = document.getElementById('nav-perfil');
+  const btnAdmin    = document.getElementById('nav-admin');
+  const btnLogout   = document.getElementById('nav-logout');
 
   // Si no hay usuario logueado, ocultamos links
   if (!user) {
-    if (btnHome) btnHome.style.display = 'none';
+    if (btnHome)     btnHome.style.display     = 'none';
     if (btnReservas) btnReservas.style.display = 'none';
-    if (btnAdmin) btnAdmin.style.display = 'none';
-    if (btnLogout) btnLogout.style.display = 'none';
+    if (btnPerfil)   btnPerfil.style.display   = 'none';
+    if (btnAdmin)    btnAdmin.style.display    = 'none';
+    if (btnLogout)   btnLogout.style.display   = 'none';
     return;
   }
 
@@ -65,29 +68,27 @@ function updateNavbarState(user, screenId) {
   if (btnLogout) btnLogout.style.display = 'inline-block';
 
   if (user.role === 'admin') {
-    // Es administrador
-    if (btnHome) btnHome.style.display = 'inline-block';
-    if (btnHome) btnHome.textContent = 'Dashboard';
-    if (btnHome) btnHome.onclick = () => goTo('admin');
-    
+    // Es administrador: solo muestra Dashboard y Panel Admin
+    if (btnHome) { btnHome.style.display = 'inline-block'; btnHome.textContent = 'Dashboard'; btnHome.onclick = () => goTo('admin'); }
     if (btnReservas) btnReservas.style.display = 'none';
-    
-    if (btnAdmin) {
-      btnAdmin.style.display = 'inline-block';
-      btnAdmin.classList.add('active');
-    }
+    if (btnPerfil)   btnPerfil.style.display   = 'none';
+    if (btnAdmin)    { btnAdmin.style.display = 'inline-block'; btnAdmin.classList.add('active'); }
   } else {
-    // Es cliente regular
-    if (btnHome) btnHome.style.display = 'inline-block';
-    if (btnHome) btnHome.textContent = 'Clases';
-    if (btnHome) btnHome.onclick = () => goTo('home');
-    if (btnHome) btnHome.classList.toggle('active', screenId === 'home');
-    
+    // Es cliente: muestra Clases, Mis Reservas, Mi Perfil
+    if (btnHome) {
+      btnHome.style.display = 'inline-block';
+      btnHome.textContent   = 'Clases';
+      btnHome.onclick       = () => goTo('home');
+      btnHome.classList.toggle('active', screenId === 'home');
+    }
     if (btnReservas) {
       btnReservas.style.display = 'inline-block';
       btnReservas.classList.toggle('active', screenId === 'reservas');
     }
-    
+    if (btnPerfil) {
+      btnPerfil.style.display = 'inline-block';
+      btnPerfil.classList.toggle('active', screenId === 'perfil');
+    }
     if (btnAdmin) btnAdmin.style.display = 'none';
   }
 }

@@ -359,5 +359,83 @@ async function deleteClass(classId) {
   return true;
 }
 
+// ── GESTIÓN DE CRÉDITOS ──────────────────────────────────────
+
+async function getCredits(userId) {
+  if (isDemoMode) {
+    const user = JSON.parse(localStorage.getItem('df_current_user') || 'null');
+    return Number(user?.credits || 0);
+  }
+  const { data, error } = await dbClient
+    .from('profiles').select('credits').eq('id', userId).single();
+  if (error) throw error;
+  return Number(data.credits || 0);
+}
+
+async function addCredits(userId, amount) {
+  const amt = Number(amount);
+  if (isDemoMode) {
+    const user = JSON.parse(localStorage.getItem('df_current_user') || 'null');
+    if (!user) throw new Error('Sesión no encontrada.');
+    user.credits = Math.round((Number(user.credits || 0) + amt) * 100) / 100;
+    localStorage.setItem('df_current_user', JSON.stringify(user));
+    return user.credits;
+  }
+  const current = await getCredits(userId);
+  const newBalance = Math.round((current + amt) * 100) / 100;
+  const { error } = await dbClient
+    .from('profiles').update({ credits: newBalance }).eq('id', userId);
+  if (error) throw error;
+  return newBalance;
+}
+
+async function deductCredits(userId, amount) {
+  const amt = Number(amount);
+  if (isDemoMode) {
+    const user = JSON.parse(localStorage.getItem('df_current_user') || 'null');
+    if (!user) throw new Error('Sesión no encontrada.');
+    const current = Number(user.credits || 0);
+    if (current < amt) throw new Error('Créditos insuficientes.');
+    user.credits = Math.round((current - amt) * 100) / 100;
+    localStorage.setItem('df_current_user', JSON.stringify(user));
+    return user.credits;
+  }
+  const current = await getCredits(userId);
+  if (current < amt) throw new Error('Créditos insuficientes.');
+  const newBalance = Math.round((current - amt) * 100) / 100;
+  const { error } = await dbClient
+    .from('profiles').update({ credits: newBalance }).eq('id', userId);
+  if (error) throw error;
+  return newBalance;
+}
+
+
+async function updateProfile(userId, updates) {
+  // Solo permitir campos no sensibles
+  const safeUpdates = {};
+  if (updates.name !== undefined) safeUpdates.name = String(updates.name).trim();
+
+  if (isDemoMode) {
+    const user = JSON.parse(localStorage.getItem('df_current_user') || 'null');
+    if (!user) throw new Error('No se encontró sesión activa.');
+    const updated = { ...user, ...safeUpdates };
+    localStorage.setItem('df_current_user', JSON.stringify(updated));
+    return updated;
+  }
+
+  const { data, error } = await dbClient
+    .from('profiles')
+    .update(safeUpdates)
+    .eq('id', userId)
+    .select()
+    .single();
+
+  if (error) {
+    console.error('Error al actualizar perfil en Supabase:', error);
+    throw error;
+  }
+  return data;
+}
+
 // Inicializar en el script load
 initDB();
