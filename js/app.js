@@ -1,5 +1,11 @@
 // ── DANCEFIT STUDIO - MOTOR DE ESTADO Y ENRUTADOR PRINCIPAL ──
 
+// ── HELPER: FORMATEAR PRECIO (sin ceros decimales innecesarios) ──
+// 25.00 → "25"  |  29.5 → "29.5"  |  50.00 → "50"
+function formatPrice(price) {
+  return parseFloat(Number(price).toFixed(2)).toString();
+}
+
 // ── ESTADO GLOBAL DE LA APLICACIÓN ──
 let state = {
   dark: localStorage.getItem('dancefit-theme') === 'dark' ||

@@ -36,7 +36,7 @@ async function renderClientHome() {
   try {
     const allClasses = await getClasses();
     grid.innerHTML = '';
-    
+
     // Filtrar clases
     const filtered = state.activeFilter === 'Todos'
       ? allClasses
@@ -68,11 +68,11 @@ async function renderClientHome() {
             </div>
           </div>
           <div class="card-footer">
-            <span class="price-chip">S/ ${cls.price}.00</span>
+            <span class="price-chip">S/ ${formatPrice(cls.price)}</span>
             <button class="reserve-btn" data-id="${cls.id}">${cls.level === 'SPECIAL WORKSHOP' ? 'Reservar Masterclass ☆' : 'Reservar →'}</button>
           </div>
         </div>`;
-      
+
       card.querySelector('.reserve-btn').onclick = (e) => {
         e.stopPropagation();
         handleStartReservation(cls);
@@ -105,7 +105,7 @@ async function renderSpotSelection() {
   document.getElementById('sb-prof').textContent = cls.instructor;
   document.getElementById('sb-dur').textContent = cls.duration;
   document.getElementById('sb-time').textContent = cls.time + 'h';
-  document.getElementById('sb-price').textContent = 'S/ ' + cls.price + '.00';
+  document.getElementById('sb-price').textContent = 'S/ ' + cls.price;
 
   updateSpotDisplay();
 
@@ -193,7 +193,7 @@ function renderClientIdentification() {
   // Autocompletar datos del usuario activo (¡Excelente optimización!)
   const inputName = document.getElementById('inputName');
   const inputDni = document.getElementById('inputDni');
-  
+
   if (inputName) inputName.value = user.name || '';
   if (inputDni) inputDni.value = user.dni || '';
 
@@ -202,7 +202,7 @@ function renderClientIdentification() {
   document.getElementById('ident-time').textContent = cls.time + 'h';
   document.getElementById('ident-spot').textContent = '#' + state.selectedSpot;
   document.getElementById('ident-level').textContent = cls.level;
-  document.getElementById('ident-price').textContent = 'S/ ' + cls.price + '.00';
+  document.getElementById('ident-price').textContent = 'S/ ' + cls.price;
 
   validateClientIdent();
 }
@@ -210,9 +210,9 @@ function renderClientIdentification() {
 function validateClientIdent() {
   const name = document.getElementById('inputName').value.trim();
   const dni = document.getElementById('inputDni').value.trim();
-  
+
   state.studentData = { name, dni };
-  
+
   const nameOk = name.length >= 3;
   const dniOk = dni.length >= 6 && dni.length <= 12;
 
@@ -232,25 +232,25 @@ function handleIdentContinue() {
 
 // ── RENDERIZAR PASARELA DE PAGO Y QR YAPE ──
 async function renderClientPayment() {
-  const cls  = state.selectedClass;
+  const cls = state.selectedClass;
   const user = getSessionUser();
   if (!cls || !user) { goTo('home'); return; }
 
   // Sin cargo de gestión: precio final = precio de la clase
   const price = Number(cls.price);
-  
+
   document.getElementById('pay-emoji').textContent = cls.emoji;
-  
+
   const levelEl = document.getElementById('pay-level');
   levelEl.textContent = cls.level;
   levelEl.style.background = (cls.level_color || '#ff5a1f') + '22';
   levelEl.style.color = cls.level_color || '#ff5a1f';
-  
+
   document.getElementById('pay-name').textContent = cls.name;
   document.getElementById('pay-time').textContent = '📅 Hoy, ' + cls.time + 'h';
-  document.getElementById('pay-base').textContent = 'S/ ' + price + '.00';
-  document.getElementById('pay-total').textContent = 'S/ ' + price + '.00';
-  document.getElementById('payBtnTotal').textContent = price + '.00';
+  document.getElementById('pay-base').textContent = 'S/ ' + price;
+  document.getElementById('pay-total').textContent = 'S/ ' + price;
+  document.getElementById('payBtnTotal').textContent = price;
 
   // Mostrar saldo de créditos
   const banner = document.getElementById('creditsBanner');
@@ -281,9 +281,9 @@ async function renderClientPayment() {
   // Limpiar campos de pago
   document.getElementById('inputPhone').value = '';
   document.getElementById('inputCode').value = '';
-  
+
   validateClientPayment();
-  
+
   // Renderizar QR de yape
   renderQR(document.getElementById('qrSvg'));
 }
@@ -291,9 +291,9 @@ async function renderClientPayment() {
 function validateClientPayment() {
   const phone = document.getElementById('inputPhone').value.replace(/\s/g, '');
   const code = document.getElementById('inputCode').value.replace(/\s/g, '');
-  
+
   state.yapeData = { phone, code };
-  
+
   const phoneOk = phone.length === 9 && /^\d+$/.test(phone);
   const codeOk = code.length === 6 && /^\d+$/.test(code);
 
@@ -308,7 +308,7 @@ function validateClientPayment() {
 // Ejecutar el yapeo y registrar reserva
 async function handlePaymentSubmission() {
   const user = getSessionUser();
-  const cls  = state.selectedClass;
+  const cls = state.selectedClass;
   if (!user || !cls || !state.selectedSpot) return;
 
   const btnPay = document.getElementById('btnPay');
@@ -316,12 +316,12 @@ async function handlePaymentSubmission() {
   btnPay.textContent = 'Procesando Yape...';
 
   const reservationPayload = {
-    profile_id:     user.id,
-    class_id:       cls.id,
-    spot_number:    state.selectedSpot,
-    phone_yape:     state.yapeData.phone,
-    code_yape:      state.yapeData.code,
-    status:         'confirmed',
+    profile_id: user.id,
+    class_id: cls.id,
+    spot_number: state.selectedSpot,
+    phone_yape: state.yapeData.phone,
+    code_yape: state.yapeData.code,
+    status: 'confirmed',
     payment_method: 'yape'
   };
 
@@ -332,19 +332,19 @@ async function handlePaymentSubmission() {
   } catch (err) {
     showToast(`❌ Error al reservar: ${err.message}`);
     btnPay.disabled = false;
-    btnPay.innerHTML = `Yapear S/ <span id="payBtnTotal">${Number(cls.price)}.00</span>`;
+    btnPay.innerHTML = `Yapear S/ <span id="payBtnTotal">${formatPrice(cls.price)}</span>`;
   }
 }
 
 // Pagar con créditos y registrar reserva
 async function handlePayWithCredits() {
   const user = getSessionUser();
-  const cls  = state.selectedClass;
+  const cls = state.selectedClass;
   if (!user || !cls || !state.selectedSpot) return;
 
-  const price     = Number(cls.price);
+  const price = Number(cls.price);
   const btnCredit = document.getElementById('btnPayCredits');
-  btnCredit.disabled  = true;
+  btnCredit.disabled = true;
   btnCredit.textContent = 'Procesando...';
 
   try {
@@ -357,12 +357,12 @@ async function handlePayWithCredits() {
 
     // 3. Registrar reserva con payment_method = 'credits'
     const reservationPayload = {
-      profile_id:     user.id,
-      class_id:       cls.id,
-      spot_number:    state.selectedSpot,
-      phone_yape:     '',
-      code_yape:      '',
-      status:         'confirmed',
+      profile_id: user.id,
+      class_id: cls.id,
+      spot_number: state.selectedSpot,
+      phone_yape: '',
+      code_yape: '',
+      status: 'confirmed',
       payment_method: 'credits'
     };
     const reservationResult = await createReservation(reservationPayload);
@@ -372,7 +372,7 @@ async function handlePayWithCredits() {
     goTo('confirm');
   } catch (err) {
     showToast(`❌ ${err.message}`);
-    btnCredit.disabled  = false;
+    btnCredit.disabled = false;
     btnCredit.textContent = 'Pagar con Créditos ✓';
   }
 }
@@ -388,12 +388,12 @@ function renderClientConfirm() {
   document.getElementById('conf-name').textContent = r.cls.name;
   document.getElementById('conf-inst').textContent = r.cls.instructor;
   document.getElementById('conf-time').textContent = 'Hoy, ' + r.cls.time + 'h';
-  
+
   const row = Math.ceil(r.spot / 8);
   const col = String(r.spot % 8 === 0 ? 8 : r.spot % 8).padStart(2, '0');
   document.getElementById('conf-spot').textContent = `Fila ${row}, Lugar ${col}`;
   document.getElementById('conf-id').textContent = r.id;
-  
+
   renderQR(document.getElementById('qrConfirm'));
   showToast('✅ ¡Reserva confirmada! Tu lugar en la sala está asegurado.');
 }
@@ -430,7 +430,7 @@ async function renderClientReservations() {
       const cls = res.classes || {};
       const card = document.createElement('div');
       card.className = 'day-card my-reservation';
-      
+
       const row = Math.ceil(res.spot_number / 8);
       const col = String(res.spot_number % 8 === 0 ? 8 : res.spot_number % 8).padStart(2, '0');
       const dateFormatted = new Date(res.created_at).toLocaleDateString('es-ES', { day: '2-digit', month: 'short' });
@@ -454,12 +454,12 @@ async function renderClientReservations() {
           Cancelar Reserva ✕
         </button>
       `;
-      
+
       card.querySelector('.cancel-res-btn').onclick = (e) => {
         e.stopPropagation();
         handleCancelReservation(res.id, cls.name || 'Clase', cls.price || 0);
       };
-      
+
       container.appendChild(card);
     });
 
