@@ -13,6 +13,36 @@
   <!-- ── NOTIFICACIÓN TOAST GLOBAL ── -->
   <div id="toast"></div>
 
+  <!-- ── MODAL DE CONFIRMACIÓN DE CANCELACIÓN ── -->
+  <div id="cancelModal" class="cancel-modal-overlay" role="dialog" aria-modal="true" aria-labelledby="cancelModalTitle">
+    <div class="cancel-modal-card">
+      <div class="cancel-modal-header">
+        <div class="cancel-modal-icon">✕</div>
+        <h2 class="cancel-modal-title" id="cancelModalTitle">Cancelar Reserva</h2>
+        <p class="cancel-modal-sub" id="cancelModalSub">¿Estás seguro de que deseas cancelar esta reserva?</p>
+      </div>
+      <div class="cancel-modal-body">
+        <div class="cancel-modal-class-info" id="cancelModalClassInfo"></div>
+        <div class="cancel-modal-credits-notice" id="cancelModalCreditsNotice" style="display:none">
+          <span class="cancel-modal-credits-icon">💰</span>
+          <div>
+            <div class="cancel-modal-credits-label">Reembolso en Créditos</div>
+            <div class="cancel-modal-credits-val" id="cancelModalCreditsVal"></div>
+          </div>
+        </div>
+        <p class="cancel-modal-warning">⚠️ Esta acción liberará tu spot y es irreversible.</p>
+      </div>
+      <div class="cancel-modal-actions">
+        <button class="btn-secondary cancel-modal-btn-no" id="cancelModalBtnNo" onclick="closeCancelModal()">
+          Mantener Reserva
+        </button>
+        <button class="cancel-modal-btn-yes" id="cancelModalBtnYes">
+          Sí, Cancelar
+        </button>
+      </div>
+    </div>
+  </div>
+
   <!-- ── BARRA DE NAVEGACIÓN UNIFICADA ── -->
   <nav>
     <div class="nav-left">
@@ -80,9 +110,9 @@
       <div class="two-col">
         <div>
           <div class="legend">
-            <div class="legend-item"><div class="legend-dot" style="background:var(--bg-card2); border:1.5px solid var(--border)"></div> Disponible</div>
+            <div class="legend-item"><div class="legend-dot" style="background:rgba(45,198,83,0.15); border:1.5px solid rgba(45,198,83,0.5)"></div> Disponible</div>
             <div class="legend-item"><div class="legend-dot" style="background:var(--accent); border:1.5px solid var(--accent)"></div> Seleccionado</div>
-            <div class="legend-item"><div class="legend-dot" style="background:var(--bg-card2); opacity:.35; border:1.5px solid transparent"></div> Ocupado</div>
+            <div class="legend-item"><div class="legend-dot" style="background:rgba(230,57,70,0.18); border:1.5px solid rgba(230,57,70,0.55); display:flex;align-items:center;justify-content:center;font-size:.55rem;color:#e63946;font-weight:900;">✕</div> Ocupado</div>
           </div>
           <div class="spot-section">
             <div class="stage-bar">🎤 Escenario / Instructor</div>

@@ -470,18 +470,42 @@ async function renderClientReservations() {
 
 async function handleCancelReservation(resId, className, classPrice) {
   const price = Number(classPrice) || 0;
-  const priceMsg = price > 0 ? `\nRecibirás S/ ${price}.00 en créditos DanceFit.` : '';
 
-  if (confirm(`¿Cancelar tu reserva para "${className}"?${priceMsg}\nEsta acción liberará tu spot y es irreversible.`)) {
+  // Rellenar contenido del modal
+  document.getElementById('cancelModalClassInfo').textContent = className;
+  document.getElementById('cancelModalSub').textContent = `¿Estás seguro de que deseas cancelar tu reserva para esta clase?`;
+
+  const creditsNotice = document.getElementById('cancelModalCreditsNotice');
+  const creditsVal = document.getElementById('cancelModalCreditsVal');
+  if (price > 0) {
+    creditsNotice.style.display = 'flex';
+    creditsVal.textContent = `+S/ ${price}.00 en créditos DanceFit`;
+  } else {
+    creditsNotice.style.display = 'none';
+  }
+
+  // Abrir modal
+  const overlay = document.getElementById('cancelModal');
+  overlay.classList.add('open');
+
+  // Configurar botón de confirmación
+  const btnYes = document.getElementById('cancelModalBtnYes');
+  // Clonar para eliminar listeners previos
+  const btnYesClone = btnYes.cloneNode(true);
+  btnYes.parentNode.replaceChild(btnYesClone, btnYes);
+
+  btnYesClone.onclick = async () => {
+    btnYesClone.disabled = true;
+    btnYesClone.textContent = 'Cancelando...';
+    closeCancelModal();
+
     try {
       showToast('Cancelando reserva...');
       await cancelReservation(resId);
 
-      // Agregar créditos equivalentes al precio de la clase
       if (price > 0) {
         const user = getSessionUser();
         const newBalance = await addCredits(user.id, price);
-        // Actualizar sesión local
         const updatedUser = { ...user, credits: newBalance };
         localStorage.setItem('df_current_user', JSON.stringify(updatedUser));
         showToast(`💰 +S/ ${price}.00 créditos añadidos. Saldo: S/ ${newBalance.toFixed(2)}`);
@@ -493,5 +517,26 @@ async function handleCancelReservation(resId, className, classPrice) {
     } catch (err) {
       showToast(`❌ Error al cancelar: ${err.message}`);
     }
-  }
+  };
 }
+
+function closeCancelModal() {
+  const overlay = document.getElementById('cancelModal');
+  overlay.classList.remove('open');
+}
+
+// Cerrar el modal al hacer click fuera de la tarjeta
+document.addEventListener('DOMContentLoaded', () => {
+  const overlay = document.getElementById('cancelModal');
+  if (overlay) {
+    overlay.addEventListener('click', (e) => {
+      if (e.target === overlay) closeCancelModal();
+    });
+    // Cerrar con Escape
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape' && overlay.classList.contains('open')) {
+        closeCancelModal();
+      }
+    });
+  }
+});

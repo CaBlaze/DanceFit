@@ -96,13 +96,14 @@ async function renderProfileScreen() {
                 id="profileNameInput"
                 type="text"
                 value="${escapeHtml(user.name || '')}"
-                placeholder="Tu nombre completo"
+                placeholder="Ej. María García López"
                 autocomplete="name"
                 maxlength="80"
                 aria-required="true"
                 aria-describedby="nameHint nameStatus"
+                oninput="validateProfileName(this)"
               >
-              <span class="help-text" id="nameHint" style="margin-top:5px;">Mínimo 3 caracteres.</span>
+              <span class="profile-name-hint" id="nameHint" style="margin-top:6px;display:flex;align-items:center;gap:5px;font-size:0.78rem;color:var(--text-muted);">Solo letras, espacios y guiones. Sin números ni símbolos.</span>
             </div>
             <button
               type="submit"
@@ -159,6 +160,74 @@ async function renderProfileScreen() {
   `;
 }
 
+// ── VALIDACIÓN EN TIEMPO REAL DEL NOMBRE ────────────────────
+function validateProfileName(input) {
+  const raw   = input.value;
+  const trimmed = raw.trim();
+  const hint  = document.getElementById('nameHint');
+  const btn   = document.getElementById('profileSaveBtn');
+
+  // Regla 1: contiene dígitos
+  if (/\d/.test(raw)) {
+    setNameHint(hint, 'error', '✕ El nombre no puede contener números.');
+    input.classList.add('error');
+    if (btn) btn.disabled = true;
+    return;
+  }
+
+  // Regla 2: contiene caracteres no permitidos (solo letras unicode, espacios, guiones, apóstrofes)
+  if (/[^a-záéíóúüñÁÉÍÓÚÜÑA-Z\s\-\']/.test(raw)) {
+    setNameHint(hint, 'error', '✕ Solo se permiten letras, espacios, guiones y apóstrofes.');
+    input.classList.add('error');
+    if (btn) btn.disabled = true;
+    return;
+  }
+
+  // Regla 3: espacios múltiples consecutivos
+  if (/\s{2,}/.test(raw)) {
+    setNameHint(hint, 'error', '✕ No se permiten espacios múltiples consecutivos.');
+    input.classList.add('error');
+    if (btn) btn.disabled = true;
+    return;
+  }
+
+  // Regla 4: longitud mínima (sin contar espacios)
+  if (trimmed.length < 3) {
+    const remaining = 3 - trimmed.length;
+    setNameHint(hint, 'warn', `⚠ Mínimo 3 caracteres (faltan ${remaining}).`);
+    input.classList.add('error');
+    if (btn) btn.disabled = true;
+    return;
+  }
+
+  // Regla 5: longitud máxima
+  if (trimmed.length > 80) {
+    setNameHint(hint, 'error', '✕ El nombre no puede superar 80 caracteres.');
+    input.classList.add('error');
+    if (btn) btn.disabled = true;
+    return;
+  }
+
+  // Todo OK
+  setNameHint(hint, 'ok', '✓ Nombre válido.');
+  input.classList.remove('error');
+  if (btn) btn.disabled = false;
+}
+
+function setNameHint(el, type, msg) {
+  if (!el) return;
+  const styles = {
+    ok:    { color: '#2dc653', icon: '' },
+    warn:  { color: '#f4a522', icon: '' },
+    error: { color: '#e63946', icon: '' },
+    idle:  { color: 'var(--text-muted)', icon: '' }
+  };
+  const s = styles[type] || styles.idle;
+  el.textContent = msg;
+  el.style.color = s.color;
+  el.style.fontWeight = type === 'idle' ? '400' : '600';
+}
+
 // ── GUARDAR CAMBIOS DE PERFIL ────────────────────────────────
 async function handleProfileUpdate(event) {
   event.preventDefault();
@@ -173,14 +242,12 @@ async function handleProfileUpdate(event) {
   // Limpiar estado previo
   setProfileStatus('');
 
-  // Validación
-  if (newName.length < 3) {
-    setProfileStatus('error', '⚠️ El nombre debe tener al menos 3 caracteres.');
+  // Re-ejecutar validación antes de guardar
+  validateProfileName(nameInput);
+  if (nameInput.classList.contains('error')) {
     nameInput.focus();
-    nameInput.classList.add('error');
     return;
   }
-  nameInput.classList.remove('error');
 
   if (newName === user.name) {
     setProfileStatus('info', 'ℹ️ Tu nombre ya está actualizado.');
