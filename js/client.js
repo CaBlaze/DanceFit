@@ -732,3 +732,6 @@ window.handlePaymentSubmission = handlePaymentSubmission;
 window.handlePayWithCredits = handlePayWithCredits;
 window.handleCancelReservation = handleCancelReservation;
 window.handlePayWithPromo = handlePayWithPromo;
+window.validateClientIdent = validateClientIdent;
+window.validateClientPayment = validateClientPayment;
+window.closeCancelModal = closeCancelModal;
