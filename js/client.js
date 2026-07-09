@@ -444,65 +444,107 @@ async function renderClientReservations() {
     return;
   }
 
-  const container = document.getElementById('weekGridInner');
-  if (!container) return;
+  const upcomingGrid = document.getElementById('upcomingGrid');
+  const pastGrid = document.getElementById('pastGrid');
+  
+  if (!upcomingGrid || !pastGrid) return;
 
-  container.innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:3rem;"><div class="loader">Obteniendo tus reservas desde Supabase...</div></div>';
+  upcomingGrid.innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:1.5rem;"><div class="loader">Obteniendo próximas clases...</div></div>';
+  pastGrid.innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:1.5rem;"><div class="loader">Cargando historial de asistencia...</div></div>';
 
   try {
     const reservations = await getReservationsForUser(user.id);
-    container.innerHTML = '';
+    upcomingGrid.innerHTML = '';
+    pastGrid.innerHTML = '';
 
-    if (reservations.length === 0) {
-      container.innerHTML = `
-        <div class="empty-reservations" style="grid-column: 1 / -1;">
-          <div class="emoji">💃🕺</div>
-          <h3>Aún no tienes reservas</h3>
-          <p>La música está sonando y la pista está libre. ¡Reserva tu primer spot hoy mismo!</p>
-          <button class="btn-primary" onclick="goTo('home')">Explorar Clases disponibles</button>
-        </div>`;
-      return;
-    }
+    const todayStr = new Date().toISOString().split('T')[0]; // YYYY-MM-DD
+    let upcomingCount = 0;
+    let pastCount = 0;
 
     reservations.forEach(res => {
       const cls = res.classes || {};
       const card = document.createElement('div');
-      card.className = 'day-card my-reservation';
-
+      
+      const isPast = cls.class_date && cls.class_date < todayStr;
+      
       const row = Math.ceil(res.spot_number / 8);
       const col = String(res.spot_number % 8 === 0 ? 8 : res.spot_number % 8).padStart(2, '0');
       const dateFormatted = new Date(res.created_at).toLocaleDateString('es-ES', { day: '2-digit', month: 'short' });
+      const classDateFormatted = cls.class_date ? new Date(cls.class_date + 'T12:00:00').toLocaleDateString('es-ES', { day: '2-digit', month: 'short', year: 'numeric' }) : '—';
 
-      card.innerHTML = `
-        <div class="day-card-top">
-          <span class="day-card-type" style="background:${cls.level_color || '#ff5a1f'}22;color:${cls.level_color || '#ff5a1f'}">${cls.level || 'CLASE'}</span>
-          <span class="day-card-time">${cls.time || '18:00'}h</span>
-        </div>
-        <div class="day-card-name">${cls.name || 'Clase de Baile'}</div>
-        <div class="day-card-prof">Prof. ${cls.instructor || 'Instructor'} (Sede: ${cls.branch || 'Principal'})</div>
-        <div class="day-card-theme" style="background:${cls.level_color || '#ff5a1f'}22;color:${cls.level_color || '#ff5a1f'}">TEMÁTICA: ${cls.theme || 'Beat'}</div>
-        
-        <div class="my-res-tag" style="margin-top:6px;border-top:1px dashed var(--border);padding-top:8px;">
-          🎟️ Spot #${res.spot_number} (Fila ${row}, Spot ${col})
-        </div>
-        <div style="font-size:0.65rem;color:var(--text-muted);margin-top:4px;margin-bottom:12px;">
-          Reservado el ${dateFormatted} · ID: ${res.id.slice(0, 13)}
-        </div>
-        <button class="cancel-res-btn" data-id="${res.id}" style="width: 100%; border: 1px solid var(--border); padding: 8px; border-radius: 6px; font-size: 0.78rem; font-weight: 700; color: #e63946; background: rgba(230,57,70,0.06); transition: all 0.2s;">
-          Cancelar Reserva ✕
-        </button>
-      `;
-
-      card.querySelector('.cancel-res-btn').onclick = (e) => {
-        e.stopPropagation();
-        handleCancelReservation(res.id, cls.name || 'Clase', cls.price || 0);
-      };
-
-      container.appendChild(card);
+      if (isPast) {
+        card.className = 'day-card my-reservation past-reservation';
+        pastCount++;
+        card.innerHTML = `
+          <div class="day-card-top">
+            <span class="day-card-type" style="background:rgba(255,255,255,0.06);color:var(--text-muted)">${cls.level || 'CLASE'}</span>
+            <span class="day-card-time">${cls.time || '18:00'}h</span>
+          </div>
+          <div class="day-card-name" style="color:var(--text-muted);">${cls.name || 'Clase de Baile'}</div>
+          <div class="day-card-prof">Prof. ${cls.instructor || 'Instructor'} (Sede: ${cls.branch || 'Principal'})</div>
+          <div class="day-card-theme" style="background:rgba(255,255,255,0.03);color:var(--text-muted);border:1px solid rgba(255,255,255,0.06)">TEMÁTICA: ${cls.theme || 'Beat'}</div>
+          
+          <div class="my-res-tag" style="margin-top:6px;border-top:1px dashed var(--border);padding-top:8px;">
+            🎟️ Spot #${res.spot_number} (Fila ${row}, Spot ${col})
+          </div>
+          <div style="font-size:0.65rem;color:var(--text-muted);margin-top:4px;margin-bottom:12px;">
+            Clase del ${classDateFormatted} · Reservado el ${dateFormatted}
+          </div>
+          <div style="width: 100%; border: 1px solid rgba(255,255,255,0.08); padding: 8px; border-radius: 6px; font-size: 0.78rem; font-weight: 700; color: #2dc653; background: rgba(45,198,83,0.06); text-align:center;">
+            ✓ Asistido / Finalizado
+          </div>
+        `;
+        pastGrid.appendChild(card);
+      } else {
+        card.className = 'day-card my-reservation';
+        upcomingCount++;
+        card.innerHTML = `
+          <div class="day-card-top">
+            <span class="day-card-type" style="background:${cls.level_color || '#ff5a1f'}22;color:${cls.level_color || '#ff5a1f'}">${cls.level || 'CLASE'}</span>
+            <span class="day-card-time">${cls.time || '18:00'}h</span>
+          </div>
+          <div class="day-card-name">${cls.name || 'Clase de Baile'}</div>
+          <div class="day-card-prof">Prof. ${cls.instructor || 'Instructor'} (Sede: ${cls.branch || 'Principal'})</div>
+          <div class="day-card-theme" style="background:${cls.level_color || '#ff5a1f'}22;color:${cls.level_color || '#ff5a1f'}">TEMÁTICA: ${cls.theme || 'Beat'}</div>
+          
+          <div class="my-res-tag" style="margin-top:6px;border-top:1px dashed var(--border);padding-top:8px;">
+            🎟️ Spot #${res.spot_number} (Fila ${row}, Spot ${col})
+          </div>
+          <div style="font-size:0.65rem;color:var(--text-muted);margin-top:4px;margin-bottom:12px;">
+            Clase del ${classDateFormatted} · Reservado el ${dateFormatted}
+          </div>
+          <button class="cancel-res-btn" data-id="${res.id}" style="width: 100%; border: 1px solid var(--border); padding: 8px; border-radius: 6px; font-size: 0.78rem; font-weight: 700; color: #e63946; background: rgba(230,57,70,0.06); transition: all 0.2s; cursor:pointer;">
+            Cancelar Reserva ✕
+          </button>
+        `;
+        card.querySelector('.cancel-res-btn').onclick = (e) => {
+          e.stopPropagation();
+          handleCancelReservation(res.id, cls.name || 'Clase', cls.price || 0);
+        };
+        upcomingGrid.appendChild(card);
+      }
     });
 
+    if (upcomingCount === 0) {
+      upcomingGrid.innerHTML = `
+        <div class="empty-reservations" style="grid-column: 1 / -1; padding: 2rem 1rem;">
+          <div class="emoji">💃🕺</div>
+          <h3 style="font-size:1rem; margin-top:8px;">No tienes reservas próximas</h3>
+          <p style="font-size:0.8rem; color:var(--text-muted);">La música está sonando. ¡Reserva tu primer spot hoy mismo!</p>
+          <button class="btn-primary" style="padding: 8px 18px; font-size:0.82rem; margin-top:8px;" onclick="goTo('home')">Explorar Clases</button>
+        </div>`;
+    }
+
+    if (pastCount === 0) {
+      pastGrid.innerHTML = `
+        <div style="grid-column: 1 / -1; text-align:center; padding: 2rem 1rem; color:var(--text-muted); font-size:0.85rem;">
+          Aún no tienes asistencias registradas en el historial.
+        </div>`;
+    }
+
   } catch (err) {
-    container.innerHTML = `<p style="color:#e63946;grid-column:1/-1;text-align:center;padding:2rem">Error al obtener historial: ${err.message}</p>`;
+    upcomingGrid.innerHTML = `<p style="color:#e63946;grid-column:1/-1;text-align:center;">Error al cargar reservas: ${err.message}</p>`;
+    pastGrid.innerHTML = '';
   }
 }
 

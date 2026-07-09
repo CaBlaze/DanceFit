@@ -746,8 +746,25 @@ input.inp.error { border-color: #e63946; }
   box-shadow: 0 2px 6px var(--shadow);
 }
 .day-card:hover { border-color: var(--accent); transform: scale(1.02); }
-.day-card.my-reservation { border: 2px solid var(--accent); cursor: default; }
-.day-card.my-reservation:hover { transform: none; }
+.day-card.my-reservation {
+  border: 1px solid var(--border);
+  cursor: default;
+  transition: all .25s ease;
+}
+.day-card.my-reservation:hover {
+  border-color: var(--accent);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 15px rgba(255, 90, 31, 0.15);
+}
+.day-card.my-reservation.past-reservation {
+  opacity: 0.65;
+}
+.day-card.my-reservation.past-reservation:hover {
+  opacity: 0.9;
+  border-color: var(--text-muted);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 15px rgba(255, 255, 255, 0.05);
+}
 .day-card-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; }
 .day-card-type { font-size: .62rem; font-weight: 700; letter-spacing: .05em; padding: 3px 8px; border-radius: 4px; text-transform: uppercase; }
 .day-card-time { font-size: .78rem; font-weight: 700; }

@@ -348,8 +348,22 @@
       <h1 class="page-title">MIS <span>RESERVAS</span></h1>
       <p class="page-sub">Monitorea tus clases y asiste a tus entrenamientos programados.</p>
 
-      <div class="week-grid" id="weekGridInner" style="min-height:300px;">
-        <!-- Se rellena dinámicamente con las reservas extraídas de Supabase -->
+      <div style="margin-top:2rem;">
+        <h2 style="font-size:1.15rem; font-weight:700; color:var(--text); margin-bottom:1rem; display:flex; align-items:center; gap:8px;">
+          <span style="color:var(--accent);">📅</span> Clases Próximas
+        </h2>
+        <div class="week-grid" id="upcomingGrid" style="min-height:100px; margin-bottom:3rem;">
+          <!-- Clases que faltan asistir -->
+        </div>
+      </div>
+
+      <div style="margin-top:2rem; border-top:1px dashed var(--border); padding-top:2rem;">
+        <h2 style="font-size:1.15rem; font-weight:700; color:var(--text-muted); margin-bottom:1rem; display:flex; align-items:center; gap:8px;">
+          <span>✓</span> Historial de Asistencias (Pasadas)
+        </h2>
+        <div class="week-grid" id="pastGrid" style="min-height:100px;">
+          <!-- Clases que ya pasaron -->
+        </div>
       </div>
     </div>
   </div>
