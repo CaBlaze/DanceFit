@@ -335,3 +335,8 @@ function escapeHtml(str) {
     .replace(/>/g, '&gt;')
     .replace(/"/g, '&quot;');
 }
+
+// Exponer funciones al entorno global window (resuelve ReferenceError en app.js e inline HTML handlers)
+window.renderProfileScreen = renderProfileScreen;
+window.handleProfileUpdate = handleProfileUpdate;
+window.validateProfileName = validateProfileName;
