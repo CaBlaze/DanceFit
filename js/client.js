@@ -722,5 +722,13 @@ window.renderClientIdentification = renderClientIdentification;
 window.renderClientPayment = renderClientPayment;
 window.renderClientConfirm = renderClientConfirm;
 window.renderClientReservations = renderClientReservations;
-window.handlePayWithPromo = handlePayWithPromo;
 window.renderBranchesClient = renderBranchesClient;
+
+// Exponer controladores de eventos para el flujo de reservas (HTML inline onclick)
+window.handleStartReservation = handleStartReservation;
+window.handleSpotContinue = handleSpotContinue;
+window.handleIdentContinue = handleIdentContinue;
+window.handlePaymentSubmission = handlePaymentSubmission;
+window.handlePayWithCredits = handlePayWithCredits;
+window.handleCancelReservation = handleCancelReservation;
+window.handlePayWithPromo = handlePayWithPromo;
