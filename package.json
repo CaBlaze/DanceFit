@@ -1,0 +1,28 @@
+{
+  "name": "dancefit",
+  "version": "1.0.0",
+  "description": "DanceFit Studio es una aplicación web interactiva premium de una sola página (SPA) diseñada para gestionar la reserva de clases de baile urbano en tiempo real. Este proyecto ha sido estructurado de forma modular y profesional a partir de un prototipo monolítico, implementando persistencia de datos relacional y autenticación en la nube mediante **Supabase**.",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/CaBlaze/DanceFit.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/CaBlaze/DanceFit/issues"
+  },
+  "homepage": "https://github.com/CaBlaze/DanceFit#readme",
+  "dependencies": {
+    "@supabase/supabase-js": "^2.110.1",
+    "cors": "^2.8.6",
+    "dotenv": "^17.4.2",
+    "express": "^5.2.1",
+    "mercadopago": "^3.2.0"
+  }
+}

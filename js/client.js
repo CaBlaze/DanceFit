@@ -724,6 +724,51 @@ window.renderClientConfirm = renderClientConfirm;
 window.renderClientReservations = renderClientReservations;
 window.renderBranchesClient = renderBranchesClient;
 
+async function handleMpPaymentInit() {
+  const user = getSessionUser();
+  const cls = state.selectedClass;
+  const spot = state.selectedSpot;
+  if (!user || !cls || !spot) {
+    showToast('⚠️ No se ha seleccionado clase o spot.');
+    return;
+  }
+
+  const btn = document.getElementById('btnMpPay');
+  btn.disabled = true;
+  btn.textContent = 'Conectando con Mercado Pago...';
+
+  try {
+    const response = await fetch('http://localhost:3000/api/create-preference', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        classId: cls.id,
+        className: cls.name,
+        price: cls.price,
+        spotNumber: spot,
+        profileId: user.id
+      })
+    });
+
+    const result = await response.json();
+    if (result.success && result.initPoint) {
+      showToast('⚡ Redirigiendo a Mercado Pago...');
+      window.location.href = result.initPoint;
+    } else {
+      showToast('❌ No se pudo crear el link de pago.');
+      btn.disabled = false;
+      btn.textContent = 'Pagar con Mercado Pago (Yape/Tarjetas) →';
+    }
+  } catch (err) {
+    console.error('Error al iniciar Mercado Pago:', err);
+    showToast('❌ El servidor de pagos local no está encendido.');
+    btn.disabled = false;
+    btn.textContent = 'Pagar con Mercado Pago (Yape/Tarjetas) →';
+  }
+}
+
 // Exponer controladores de eventos para el flujo de reservas (HTML inline onclick)
 window.handleStartReservation = handleStartReservation;
 window.handleSpotContinue = handleSpotContinue;
@@ -735,3 +780,4 @@ window.handlePayWithPromo = handlePayWithPromo;
 window.validateClientIdent = validateClientIdent;
 window.validateClientPayment = validateClientPayment;
 window.closeCancelModal = closeCancelModal;
+window.handleMpPaymentInit = handleMpPaymentInit;

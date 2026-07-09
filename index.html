@@ -244,6 +244,24 @@
             </div>
           </div>
 
+          <!-- ── METODO 1: MERCADO PAGO AUTOMÁTICO (Yape y Tarjetas) ── -->
+          <div class="pay-card" style="margin-bottom:1.5rem; border:1px solid rgba(0, 180, 216, 0.35); background: linear-gradient(135deg, rgba(0, 180, 216, 0.05), rgba(0, 0, 0, 0));">
+            <div style="display:flex; align-items:center; gap:12px; margin-bottom:1rem;">
+              <span style="font-size:1.8rem;">💳</span>
+              <div>
+                <div style="font-weight:800; font-size:1.1rem; color:var(--text);">Pago Automático e Instante</div>
+                <div style="font-size:0.78rem; color:var(--text-muted);">Paga al instante con Yape (QR Automático) o cualquier Tarjeta de Crédito/Débito.</div>
+              </div>
+            </div>
+            <button class="btn-primary" id="btnMpPay" style="width:100%; padding:14px; background:linear-gradient(135deg, #00b4d8, #0077b6); border:none; font-size:0.92rem; font-weight:700;" onclick="handleMpPaymentInit()">
+              Pagar con Mercado Pago (Yape/Tarjetas) →
+            </button>
+          </div>
+
+          <div style="text-align:center; margin-bottom:1.5rem; color:var(--text-muted); font-size:0.72rem; font-weight:700; letter-spacing:0.1em;">
+            — O REALIZAR PAGO MANUAL (YAPE GRATUITO) —
+          </div>
+
           <div class="pay-card">
             <div class="yape-header">
               <div class="yape-icon">⚡</div>

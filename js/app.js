@@ -313,9 +313,58 @@ async function handleLogout() {
 }
 
 // ── EVENTOS DE INICIALIZACIÓN ──
+async function checkMercadoPagoCallback() {
+  const params = new URLSearchParams(window.location.search);
+  const paymentStatus = params.get('payment');
+  
+  if (paymentStatus === 'success') {
+    const classId = params.get('classId');
+    const spot = params.get('spot');
+    const profileId = params.get('profileId');
+    const collectionId = params.get('collection_id') || params.get('payment_id');
+    
+    if (classId && spot && profileId) {
+      showToast('🔄 Sincronizando reserva con Mercado Pago...');
+      try {
+        const response = await fetch('http://localhost:3000/api/confirm-payment', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            profileId,
+            classId,
+            spotNumber: spot,
+            paymentId: collectionId
+          })
+        });
+        const result = await response.json();
+        
+        if (result.success) {
+          window.history.replaceState({}, document.title, window.location.pathname);
+          const allClasses = await window.getClasses();
+          const cls = allClasses.find(c => c.id === classId);
+          
+          state.reservation = { ...result.reservation, cls: cls };
+          goTo('confirm');
+        } else {
+          showToast('❌ Error de registro: ' + result.error);
+        }
+      } catch (err) {
+        console.error('Error en callback:', err);
+        showToast('❌ El servidor local de Mercado Pago no está activo.');
+      }
+    }
+  } else if (paymentStatus === 'failure') {
+    showToast('❌ Pago cancelado o denegado.');
+    window.history.replaceState({}, document.title, window.location.pathname);
+  }
+}
+
 document.addEventListener('DOMContentLoaded', () => {
   applyTheme();
   
+  // Procesar si regresamos de Mercado Pago exitosamente
+  checkMercadoPagoCallback();
+
   // Validar el estado de arranque de la sesión activa
   const user = getSessionUser();
   if (user) {
