@@ -661,6 +661,60 @@ async function handlePayWithPromo() {
   }
 }
 
+async function renderBranchesClient() {
+  const grid = document.getElementById('branchesClientGrid');
+  if (!grid) return;
+  grid.innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:3rem;"><div class="loader">Ubicando nuestros estudios...</div></div>';
+  
+  try {
+    const branches = await getBranches();
+    const classes = await getClasses();
+    grid.innerHTML = '';
+
+    if (branches.length === 0) {
+      grid.innerHTML = '<p style="color:var(--text-muted);grid-column:1/-1;text-align:center;padding:2rem">No hay sedes registradas en este momento.</p>';
+      return;
+    }
+
+    // Fondos degradados premium para cada sede
+    const gradients = [
+      'linear-gradient(135deg, rgba(255, 90, 31, 0.15), rgba(11, 21, 34, 0.95))',
+      'linear-gradient(135deg, rgba(0, 180, 216, 0.15), rgba(11, 21, 34, 0.95))',
+      'linear-gradient(135deg, rgba(45, 198, 83, 0.15), rgba(11, 21, 34, 0.95))'
+    ];
+    const emojis = ['🏢', '🌟', '💃'];
+
+    branches.forEach((b, idx) => {
+      // Contar clases programadas en esta sede
+      const count = classes.filter(c => c.branch === b.name || Number(c.branch_id) === Number(b.id)).length;
+      
+      const bg = gradients[idx % gradients.length];
+      const emoji = emojis[idx % emojis.length];
+
+      const card = document.createElement('div');
+      card.className = 'class-card';
+      card.style.cursor = 'default';
+      card.innerHTML = `
+        <div class="card-img" style="background:${bg}; height:140px; display:flex; align-items:center; justify-content:center; font-size:3.2rem;">
+          <span>${emoji}</span>
+        </div>
+        <div class="card-body" style="padding: 1.5rem;">
+          <div class="card-title" style="font-size:1.25rem; font-family:'Playfair Display', serif; margin-bottom:8px; color:#fff;">${b.name}</div>
+          <div style="font-size:0.85rem; color:var(--text-muted); margin-bottom:12px; display:flex; align-items:center; gap:6px;">
+            <span>📍</span> ${b.address}
+          </div>
+          <div style="border-top:1px dashed var(--border); padding-top:12px; margin-top:12px; display:flex; justify-content:space-between; align-items:center;">
+            <span style="font-size:0.78rem; color:#2dc653; font-weight:700;">📡 ESTUDIO OPERATIVO</span>
+            <span class="price-chip" style="background:rgba(255,90,31,0.08); color:var(--accent); font-size:0.75rem;">${count} clases prog.</span>
+          </div>
+        </div>`;
+      grid.appendChild(card);
+    });
+  } catch (err) {
+    grid.innerHTML = `<p style="color:#e63946;grid-column:1/-1;text-align:center;padding:2rem">Error al cargar estudios: ${err.message}</p>`;
+  }
+}
+
 // Al final de js/client.js:
 window.renderClientHome = renderClientHome;
 window.renderSpotSelection = renderSpotSelection;
@@ -669,3 +723,4 @@ window.renderClientPayment = renderClientPayment;
 window.renderClientConfirm = renderClientConfirm;
 window.renderClientReservations = renderClientReservations;
 window.handlePayWithPromo = handlePayWithPromo;
+window.renderBranchesClient = renderBranchesClient;

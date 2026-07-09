@@ -62,6 +62,7 @@ function goTo(screenId) {
   if (screenId === 'confirm')   renderClientConfirm();
   if (screenId === 'reservas')  renderClientReservations();
   if (screenId === 'perfil')    renderProfileScreen();
+  if (screenId === 'sedes-cliente') renderBranchesClient();
   if (screenId === 'login')     renderAuthScreen();
   
   // Rutas exclusivas del Usuario Administrador
