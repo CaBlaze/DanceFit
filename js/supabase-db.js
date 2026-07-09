@@ -346,6 +346,8 @@ async function getOccupiedSpots(classId) {
 }
 
 async function createReservation(resData) {
+  let newRes = null;
+
   if (isDemoMode) {
     const localRes = JSON.parse(localStorage.getItem("df_reservations") || "[]");
     
@@ -355,7 +357,7 @@ async function createReservation(resData) {
       throw new Error("El spot ya se encuentra reservado para esta clase.");
     }
     
-    const newRes = {
+    newRes = {
       id: "DF-" + Math.floor(100000 + Math.random() * 900000) + "-TK",
       ...resData,
       status: "confirmed",
@@ -364,19 +366,61 @@ async function createReservation(resData) {
     
     localRes.push(newRes);
     localStorage.setItem("df_reservations", JSON.stringify(localRes));
-    return newRes;
+  } else {
+    const { data, error } = await dbClient
+      .from('reservations')
+      .insert([resData])
+      .select();
+      
+    if (error) {
+      console.error("Error al crear reserva en Supabase:", error);
+      throw error;
+    }
+    newRes = data[0];
   }
 
-  const { data, error } = await dbClient
-    .from('reservations')
-    .insert([resData])
-    .select();
-    
-  if (error) {
-    console.error("Error al crear reserva en Supabase:", error);
-    throw error;
+  // ── SISTEMA DE FIDELIZACIÓN (TARJETA DE ASISTENCIAS) ──
+  try {
+    const allRes = await getReservationsForUser(resData.profile_id);
+    const now = new Date();
+    const curMonth = now.getMonth();
+    const curYear = now.getFullYear();
+
+    const monthRes = allRes.filter(r => {
+      if (!r.classes || !r.classes.class_date) return false;
+      const d = new Date(r.classes.class_date + 'T12:00:00');
+      return d.getMonth() === curMonth && d.getFullYear() === curYear;
+    });
+
+    if (monthRes.length > 0 && monthRes.length % 8 === 0) {
+      await addFreeClass(resData.profile_id);
+
+      // Si es el usuario logueado, actualizar la sesión en localStorage
+      const user = getSessionUser();
+      if (user && user.id === resData.profile_id) {
+        user.free_classes = (user.free_classes || 0) + 1;
+        localStorage.setItem("df_current_user", JSON.stringify(user));
+      }
+
+      // Si estamos en demo, también actualizar la base de datos de perfiles demo
+      if (isDemoMode) {
+        const profiles = JSON.parse(localStorage.getItem("df_profiles_demo") || "[]");
+        const pIdx = profiles.findIndex(p => p.id === resData.profile_id);
+        if (pIdx !== -1) {
+          profiles[pIdx].free_classes = (profiles[pIdx].free_classes || 0) + 1;
+          localStorage.setItem("df_profiles_demo", JSON.stringify(profiles));
+        }
+      }
+
+      setTimeout(() => {
+        alert("🎉 ¡Felicidades! Has acumulado 8 reservas este mes. ¡Ganaste una CLASE DE REGALO! 🎁 (Válida para clases de hasta S/ 40.00)");
+      }, 300);
+    }
+  } catch (err) {
+    console.error("Error al procesar fidelización de asistencias:", err);
   }
-  return data[0];
+
+  return newRes;
 }
 
 async function getReservationsForUser(userId) {
@@ -530,12 +574,12 @@ async function deleteClass(classId) {
 async function getCredits(userId) {
   if (isDemoMode) {
     const user = JSON.parse(localStorage.getItem('df_current_user') || 'null');
-    return Number(user?.credits || 0);
+    return Number(user?.credits !== undefined ? user.credits : 20.00);
   }
   const { data, error } = await dbClient
     .from('profiles').select('credits').eq('id', userId).single();
   if (error) throw error;
-  return Number(data.credits || 0);
+  return Number(data.credits !== null && data.credits !== undefined ? data.credits : 20.00);
 }
 
 async function addCredits(userId, amount) {
@@ -574,6 +618,53 @@ async function deductCredits(userId, amount) {
   if (error) throw error;
   return newBalance;
 }
+
+async function getFreeClasses(userId) {
+  if (isDemoMode) {
+    const user = JSON.parse(localStorage.getItem('df_current_user') || 'null');
+    return Number(user?.free_classes || 0);
+  }
+  const { data, error } = await dbClient
+    .from('profiles').select('free_classes').eq('id', userId).single();
+  if (error) throw error;
+  return Number(data.free_classes || 0);
+}
+
+async function addFreeClass(userId) {
+  if (isDemoMode) {
+    const user = JSON.parse(localStorage.getItem('df_current_user') || 'null');
+    if (!user) throw new Error('Sesión no encontrada.');
+    user.free_classes = Number(user.free_classes || 0) + 1;
+    localStorage.setItem('df_current_user', JSON.stringify(user));
+    return user.free_classes;
+  }
+  const current = await getFreeClasses(userId);
+  const newCount = current + 1;
+  const { error } = await dbClient
+    .from('profiles').update({ free_classes: newCount }).eq('id', userId);
+  if (error) throw error;
+  return newCount;
+}
+
+async function deductFreeClass(userId) {
+  if (isDemoMode) {
+    const user = JSON.parse(localStorage.getItem('df_current_user') || 'null');
+    if (!user) throw new Error('Sesión no encontrada.');
+    const current = Number(user.free_classes || 0);
+    if (current <= 0) throw new Error('No tienes clases de regalo disponibles.');
+    user.free_classes = current - 1;
+    localStorage.setItem('df_current_user', JSON.stringify(user));
+    return user.free_classes;
+  }
+  const current = await getFreeClasses(userId);
+  if (current <= 0) throw new Error('No tienes clases de regalo disponibles.');
+  const newCount = current - 1;
+  const { error } = await dbClient
+    .from('profiles').update({ free_classes: newCount }).eq('id', userId);
+  if (error) throw error;
+  return newCount;
+}
+
 
 
 async function updateProfile(userId, updates) {
@@ -628,5 +719,8 @@ window.deleteClass = deleteClass;
 window.getCredits = getCredits;
 window.addCredits = addCredits;
 window.deductCredits = deductCredits;
+window.getFreeClasses = getFreeClasses;
+window.addFreeClass = addFreeClass;
+window.deductFreeClass = deductFreeClass;
 window.updateProfile = updateProfile;
 

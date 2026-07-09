@@ -230,6 +230,20 @@
             </div>
           </div>
 
+          <!-- ── BANNER DE CLASE GRATIS (PROMO CANJE) ── -->
+          <div id="promoBanner" style="display:none; margin-bottom:1.2rem; background:rgba(45,198,83,0.08); border:1px solid rgba(45,198,83,0.3); border-radius:12px; padding:1.2rem 1.5rem;">
+            <div style="display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:12px;">
+              <div>
+                <div style="font-size:0.72rem; font-weight:700; letter-spacing:.08em; text-transform:uppercase; color:#2dc653; margin-bottom:4px;">🎁 Clases de Regalo Acumuladas</div>
+                <div style="font-size:1.6rem; font-weight:800; color:#2dc653;" id="promoCountDisplay">0 Disponible(s)</div>
+                <div style="font-size:0.78rem; color:var(--text-muted); margin-top:2px;" id="promoHint"></div>
+              </div>
+              <button id="btnPayPromo" class="btn-primary" style="background:#2dc653; padding:12px 22px; font-size:0.9rem;" onclick="handlePayWithPromo()">
+                Canjear Clase Gratis ✓
+              </button>
+            </div>
+          </div>
+
           <div class="pay-card">
             <div class="yape-header">
               <div class="yape-icon">⚡</div>

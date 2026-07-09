@@ -1310,6 +1310,201 @@ footer {
   color: #e63946;
   border: 1px solid rgba(230, 57, 70, 0.3);
 }
+  from { opacity: 0; transform: translateY(20px) scale(0.96); }
+  to   { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+.cancel-modal-header {
+  background: linear-gradient(135deg, rgba(230,57,70,0.1), rgba(230,57,70,0.04));
+  border-bottom: 1px solid rgba(230,57,70,0.18);
+  padding: 2rem 2rem 1.6rem;
+  text-align: center;
+}
+
+.cancel-modal-icon {
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  background: rgba(230,57,70,0.12);
+  border: 1.5px solid rgba(230,57,70,0.35);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.4rem;
+  color: #e63946;
+  margin: 0 auto 1rem;
+  font-weight: 700;
+}
+
+.cancel-modal-title {
+  font-family: 'Playfair Display', serif;
+  font-size: 1.45rem;
+  font-weight: 700;
+  margin-bottom: 0.4rem;
+  color: var(--text);
+}
+
+.cancel-modal-sub {
+  font-size: 0.88rem;
+  color: var(--text-muted);
+  line-height: 1.5;
+}
+
+.cancel-modal-body {
+  padding: 1.5rem 2rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.cancel-modal-class-info {
+  background: var(--bg-card2);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 1rem 1.2rem;
+  font-size: 0.92rem;
+  font-weight: 700;
+  color: var(--text);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.cancel-modal-class-info::before {
+  content: '🎟️';
+  font-size: 1.3rem;
+  flex-shrink: 0;
+}
+
+.cancel-modal-credits-notice {
+  background: rgba(45, 198, 83, 0.08);
+  border: 1px solid rgba(45, 198, 83, 0.28);
+  border-radius: 12px;
+  padding: 1rem 1.2rem;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.cancel-modal-credits-icon {
+  font-size: 1.5rem;
+  flex-shrink: 0;
+}
+
+.cancel-modal-credits-label {
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #2dc653;
+  margin-bottom: 2px;
+}
+
+.cancel-modal-credits-val {
+  font-size: 1.15rem;
+  font-weight: 800;
+  color: #2dc653;
+}
+
+.cancel-modal-warning {
+  font-size: 0.82rem;
+  color: var(--text-muted);
+  text-align: center;
+  line-height: 1.5;
+}
+
+.cancel-modal-actions {
+  padding: 0 2rem 2rem;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+
+.cancel-modal-btn-no {
+  padding: 13px 18px;
+  font-size: 0.88rem;
+}
+
+.cancel-modal-btn-yes {
+  background: #e63946;
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  padding: 13px 18px;
+  font-weight: 700;
+  font-size: 0.88rem;
+  font-family: inherit;
+  cursor: pointer;
+  transition: opacity 0.2s, transform 0.1s;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+}
+.cancel-modal-btn-yes:hover { opacity: 0.9; transform: translateY(-1px); }
+.cancel-modal-btn-yes:active { transform: translateY(0); }
+.cancel-modal-btn-yes:disabled { opacity: 0.45; cursor: not-allowed; transform: none; }
+
+@media (max-width: 480px) {
+  .cancel-modal-actions { grid-template-columns: 1fr; }
+  .cancel-modal-header { padding: 1.5rem 1.5rem 1.2rem; }
+  .cancel-modal-body { padding: 1.2rem 1.5rem; }
+  .cancel-modal-actions { padding: 0 1.5rem 1.5rem; }
+}
+
+/* ── ESTILOS ADICIONALES PARA EL PANEL DE ADMINISTRACIÓN MODULAR ── */
+.admin-tab-btn {
+  background: transparent;
+  color: var(--text-muted);
+  border: 1px solid transparent;
+  border-bottom: 2.5px solid transparent;
+  padding: 10px 20px;
+  font-size: .88rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all .25s ease;
+  border-radius: 8px 8px 0 0;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+.admin-tab-btn:hover {
+  color: var(--accent);
+  background: rgba(255, 90, 31, 0.05);
+}
+.admin-tab-btn.active {
+  color: var(--accent);
+  border-bottom: 2.5px solid var(--accent);
+  background: rgba(255, 90, 31, 0.08);
+}
+
+.btn-small {
+  padding: 6px 12px;
+  font-size: 0.76rem;
+  font-weight: 700;
+  border-radius: 6px;
+  transition: all 0.2s;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  cursor: pointer;
+  border: 1px solid transparent;
+}
+.btn-edit {
+  background: rgba(255, 179, 0, 0.12);
+  color: #ffb300;
+  border: 1px solid rgba(255, 179, 0, 0.3);
+}
+.btn-edit:hover {
+  background: #ffb300;
+  color: #111;
+  border-color: #ffb300;
+}
+.btn-delete {
+  background: rgba(230, 57, 70, 0.12);
+  color: #e63946;
+  border: 1px solid rgba(230, 57, 70, 0.3);
+}
 .btn-delete:hover {
   background: #e63946;
   color: #fff;
@@ -1317,4 +1512,144 @@ footer {
 }
 .admin-panel-content {
   animation: fadeInUp 0.35s ease;
+}
+
+/* ── TARJETA DE FIDELIZACIÓN (STAMP CARD) ── */
+.loyalty-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  padding: 1.5rem 2rem;
+  margin-top: 1rem;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+}
+
+.loyalty-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1.5rem;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.loyalty-progress-text {
+  font-size: 1rem;
+  color: var(--text);
+}
+
+.loyalty-progress-text strong {
+  color: var(--accent);
+  font-size: 1.2rem;
+}
+
+.loyalty-month-tag {
+  background: rgba(255, 90, 31, 0.1);
+  color: var(--accent);
+  padding: 6px 12px;
+  border-radius: 20px;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+}
+
+.stamps-grid {
+  display: grid;
+  grid-template-columns: repeat(8, 1fr);
+  gap: 12px;
+  margin-bottom: 1.5rem;
+}
+
+@media (max-width: 640px) {
+  .stamps-grid {
+    grid-template-columns: repeat(4, 1fr);
+  }
+}
+
+.stamp-slot {
+  aspect-ratio: 1;
+  background: var(--bg-card2);
+  border: 2px dashed var(--border);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.stamp-number {
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: var(--text-muted);
+}
+
+.stamp-slot.active {
+  background: linear-gradient(135deg, rgba(255, 90, 31, 0.15), rgba(255, 90, 31, 0.03));
+  border: 2px solid var(--accent);
+  box-shadow: 0 0 15px rgba(255, 90, 31, 0.25);
+  transform: scale(1.05);
+}
+
+.stamp-slot.active .stamp-number {
+  display: none;
+}
+
+.stamp-icon {
+  font-size: 1.5rem;
+  animation: popIn 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+}
+
+@keyframes popIn {
+  from { transform: scale(0); opacity: 0; }
+  to { transform: scale(1); opacity: 1; }
+}
+
+.loyalty-info-box {
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid var(--border);
+  padding: 12px;
+  border-radius: 10px;
+  text-align: center;
+  font-size: 0.85rem;
+  color: var(--text-muted);
+}
+
+.promo-reward-box {
+  background: rgba(45, 198, 83, 0.08);
+  border: 1px solid rgba(45, 198, 83, 0.28);
+  border-radius: 12px;
+  padding: 1rem 1.2rem;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  animation: pulseGreen 2s infinite alternate;
+}
+
+@keyframes pulseGreen {
+  from { box-shadow: 0 0 5px rgba(45, 198, 83, 0.1); }
+  to { box-shadow: 0 0 15px rgba(45, 198, 83, 0.25); }
+}
+
+.reward-gift-emoji {
+  font-size: 1.8rem;
+  animation: bounceGift 1s infinite alternate;
+}
+
+@keyframes bounceGift {
+  from { transform: translateY(0); }
+  to { transform: translateY(-4px); }
+}
+
+.reward-box-title {
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: #2dc653;
+  margin-bottom: 2px;
+}
+
+.reward-box-desc {
+  font-size: 0.82rem;
+  color: rgba(255, 255, 255, 0.8);
+  line-height: 1.4;
 }

@@ -270,6 +270,7 @@ async function renderClientPayment() {
       if (credits >= price) {
         hintEl.textContent = '✓ Tienes créditos suficientes para cubrir esta clase.';
         btnCredits.disabled = false;
+        btnCredits.style.opacity = '1';
       } else {
         hintEl.textContent = `⚠️ Te faltan S/ ${(price - credits).toFixed(2)} para cubrir esta clase.`;
         btnCredits.disabled = true;
@@ -280,6 +281,37 @@ async function renderClientPayment() {
     }
   } catch (_) {
     banner.style.display = 'none';
+  }
+
+  // Mostrar balance de clases de regalo (promoción)
+  const promoBanner = document.getElementById('promoBanner');
+  const promoCountDisplay = document.getElementById('promoCountDisplay');
+  const promoHint = document.getElementById('promoHint');
+  const btnPayPromo = document.getElementById('btnPayPromo');
+
+  if (promoBanner && promoCountDisplay && promoHint && btnPayPromo) {
+    try {
+      const freeClasses = await getFreeClasses(user.id);
+      if (freeClasses > 0) {
+        promoBanner.style.display = 'block';
+        promoCountDisplay.textContent = `${freeClasses} Disponible(s) 🎁`;
+        
+        if (price <= 40) {
+          promoHint.textContent = '✓ Puedes canjear 1 clase de regalo para esta reserva.';
+          btnPayPromo.disabled = false;
+          btnPayPromo.style.opacity = '1';
+        } else {
+          promoHint.textContent = `⚠️ Esta clase excede el límite de S/ 40.00 (Precio: S/ ${price.toFixed(2)}).`;
+          btnPayPromo.disabled = true;
+          btnPayPromo.style.opacity = '0.45';
+        }
+      } else {
+        promoBanner.style.display = 'none';
+      }
+    } catch (err) {
+      console.error("Error al obtener clases gratis:", err);
+      promoBanner.style.display = 'none';
+    }
   }
 
   // Limpiar campos de pago
@@ -547,6 +579,46 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 });
 
+async function handlePayWithPromo() {
+  const user = getSessionUser();
+  const cls = state.selectedClass;
+  if (!user || !cls || !state.selectedSpot) return;
+
+  const btnPromo = document.getElementById('btnPayPromo');
+  btnPromo.disabled = true;
+  btnPromo.textContent = 'Procesando Canje...';
+
+  const reservationPayload = {
+    profile_id: user.id,
+    class_id: cls.id,
+    spot_number: state.selectedSpot,
+    phone_yape: 'PROMO',
+    code_yape: 'GRATIS',
+    status: 'confirmed',
+    payment_method: 'free_promo'
+  };
+
+  try {
+    // 1. Deducir la clase de regalo
+    const newCount = await deductFreeClass(user.id);
+    
+    // Actualizar sesión activa
+    user.free_classes = newCount;
+    localStorage.setItem('df_current_user', JSON.stringify(user));
+
+    // 2. Registrar la reserva
+    const res = await createReservation(reservationPayload);
+    state.reservation = { ...res, cls: cls };
+
+    showToast(`🎁 ¡Canjeado correctamente! Clases gratis restantes: ${newCount}`);
+    goTo('confirm');
+  } catch (err) {
+    showToast(`❌ ${err.message}`);
+    btnPromo.disabled = false;
+    btnPromo.textContent = 'Canjear Clase Gratis ✓';
+  }
+}
+
 // Al final de js/client.js:
 window.renderClientHome = renderClientHome;
 window.renderSpotSelection = renderSpotSelection;
@@ -554,3 +626,4 @@ window.renderClientIdentification = renderClientIdentification;
 window.renderClientPayment = renderClientPayment;
 window.renderClientConfirm = renderClientConfirm;
 window.renderClientReservations = renderClientReservations;
+window.handlePayWithPromo = handlePayWithPromo;

@@ -15,14 +15,34 @@ async function renderProfileScreen() {
     </main>`;
 
   let reservationCount = 0;
+  let currentMonthBookings = 0;
   let credits = 0;
+  let freeClasses = 0;
+
   try {
     const reservas = await getReservationsForUser(user.id);
     reservationCount = reservas.length;
-  } catch (_) { /* si falla, mostramos 0 */ }
+
+    // Calcular reservas del mes actual
+    const now = new Date();
+    const curMonth = now.getMonth();
+    const curYear = now.getFullYear();
+    currentMonthBookings = reservas.filter(r => {
+      if (!r.classes || !r.classes.class_date) return false;
+      const d = new Date(r.classes.class_date + 'T12:00:00');
+      return d.getMonth() === curMonth && d.getFullYear() === curYear;
+    }).length;
+  } catch (err) {
+    console.error("Error cargando reservas de usuario:", err);
+  }
+
   try {
     credits = await getCredits(user.id);
-  } catch (_) { /* si falla, mostramos 0 */ }
+  } catch (_) {}
+
+  try {
+    freeClasses = await getFreeClasses(user.id);
+  } catch (_) {}
 
   // Iniciales del avatar (máx. 2 letras)
   const initials = (user.name || 'DF')
@@ -36,6 +56,26 @@ async function renderProfileScreen() {
   const since = user.created_at
     ? new Date(user.created_at).toLocaleDateString('es-ES', { month: 'long', year: 'numeric' })
     : 'Recientemente';
+
+  // Generar HTML de los sellos/stamps
+  let stampsHtml = '';
+  const stampsNeeded = 8;
+  const activeStamps = currentMonthBookings % 8;
+
+  for (let i = 1; i <= stampsNeeded; i++) {
+    if (i <= activeStamps) {
+      stampsHtml += `
+        <div class="stamp-slot active" aria-label="Asistencia ${i} registrada">
+          <span class="stamp-icon">⭐</span>
+          <span class="stamp-number">${i}</span>
+        </div>`;
+    } else {
+      stampsHtml += `
+        <div class="stamp-slot" aria-label="Asistencia ${i} vacía">
+          <span class="stamp-number">${i}</span>
+        </div>`;
+    }
+  }
 
   container.innerHTML = `
     <main class="page profile-page" style="max-width:860px;"
@@ -52,6 +92,43 @@ async function renderProfileScreen() {
           <p class="profile-since">Miembro desde ${since}</p>
         </div>
       </div>
+
+      <!-- ── TARJETA DE FIDELIZACIÓN (STAMPS) ──────────── -->
+      <section class="profile-section" aria-labelledby="loyalty-heading">
+        <h2 class="profile-section-title" id="loyalty-heading">Tarjeta de Asistencias Mensual</h2>
+        <p class="profile-section-sub">
+          Acumula 8 asistencias (reservas realizadas en el mes actual) para ganarte una clase gratis de hasta S/ 40.00. Se actualiza automáticamente cada mes.
+        </p>
+
+        <div class="loyalty-card">
+          <div class="loyalty-card-header">
+            <div class="loyalty-progress-text">
+              Llevas <strong>${activeStamps}</strong> de <strong>8</strong> asistencias este mes
+            </div>
+            <div class="loyalty-month-tag">
+              📅 ${new Date().toLocaleDateString('es-ES', { month: 'long', year: 'numeric' }).toUpperCase()}
+            </div>
+          </div>
+          
+          <div class="stamps-grid">
+            ${stampsHtml}
+          </div>
+
+          ${freeClasses > 0 ? `
+            <div class="promo-reward-box">
+              <span class="reward-gift-emoji">🎁</span>
+              <div>
+                <div class="reward-box-title">¡Clase Gratis Disponible!</div>
+                <div class="reward-box-desc">Tienes <strong>${freeClasses} clase(s) de regalo</strong> acumuladas. ¡Úsala(s) al reservar cualquier clase menor o igual a S/ 40.00!</div>
+              </div>
+            </div>
+          ` : `
+            <div class="loyalty-info-box">
+              🎯 ¡Te faltan <strong>${8 - activeStamps}</strong> asistencias para reclamar tu clase gratis de regalo!
+            </div>
+          `}
+        </div>
+      </section>
 
       <!-- ── TARJETAS DE INFORMACIÓN (SOLO LECTURA) ───── -->
       <section class="profile-section" aria-labelledby="info-heading">

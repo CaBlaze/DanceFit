@@ -86,7 +86,9 @@ async function registerUser(email, password, name, dni, role = 'client') {
       name: name.trim(),
       dni: dni.trim(),
       role: role === 'admin' ? 'admin' : 'client',
-      password: password
+      password: password,
+      credits: 20.00,
+      free_classes: 0
     };
 
     profiles.push(newUser);
@@ -115,7 +117,9 @@ async function registerUser(email, password, name, dni, role = 'client') {
     email: email.trim(),
     name: name.trim(),
     dni: dni.trim(),
-    role: role === 'admin' ? 'admin' : 'client'
+    role: role === 'admin' ? 'admin' : 'client',
+    credits: 20.00,
+    free_classes: 0
   };
 
   // Guardamos sesión activa
