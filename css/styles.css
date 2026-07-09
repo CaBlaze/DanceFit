@@ -1256,3 +1256,65 @@ footer {
   .cancel-modal-body { padding: 1.2rem 1.5rem; }
   .cancel-modal-actions { padding: 0 1.5rem 1.5rem; }
 }
+
+/* ── ESTILOS ADICIONALES PARA EL PANEL DE ADMINISTRACIÓN MODULAR ── */
+.admin-tab-btn {
+  background: transparent;
+  color: var(--text-muted);
+  border: 1px solid transparent;
+  border-bottom: 2.5px solid transparent;
+  padding: 10px 20px;
+  font-size: .88rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all .25s ease;
+  border-radius: 8px 8px 0 0;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+.admin-tab-btn:hover {
+  color: var(--accent);
+  background: rgba(255, 90, 31, 0.05);
+}
+.admin-tab-btn.active {
+  color: var(--accent);
+  border-bottom: 2.5px solid var(--accent);
+  background: rgba(255, 90, 31, 0.08);
+}
+
+.btn-small {
+  padding: 6px 12px;
+  font-size: 0.76rem;
+  font-weight: 700;
+  border-radius: 6px;
+  transition: all 0.2s;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  cursor: pointer;
+  border: 1px solid transparent;
+}
+.btn-edit {
+  background: rgba(255, 179, 0, 0.12);
+  color: #ffb300;
+  border: 1px solid rgba(255, 179, 0, 0.3);
+}
+.btn-edit:hover {
+  background: #ffb300;
+  color: #111;
+  border-color: #ffb300;
+}
+.btn-delete {
+  background: rgba(230, 57, 70, 0.12);
+  color: #e63946;
+  border: 1px solid rgba(230, 57, 70, 0.3);
+}
+.btn-delete:hover {
+  background: #e63946;
+  color: #fff;
+  border-color: #e63946;
+}
+.admin-panel-content {
+  animation: fadeInUp 0.35s ease;
+}

@@ -106,6 +106,8 @@ async function renderSpotSelection() {
   document.getElementById('sb-dur').textContent = cls.duration;
   document.getElementById('sb-time').textContent = cls.time + 'h';
   document.getElementById('sb-price').textContent = 'S/ ' + cls.price;
+  const elBranch = document.getElementById('sb-branch');
+  if (elBranch) elBranch.textContent = cls.branch || 'Sede Principal';
 
   updateSpotDisplay();
 
@@ -203,6 +205,8 @@ function renderClientIdentification() {
   document.getElementById('ident-spot').textContent = '#' + state.selectedSpot;
   document.getElementById('ident-level').textContent = cls.level;
   document.getElementById('ident-price').textContent = 'S/ ' + cls.price;
+  const elBranch = document.getElementById('ident-branch');
+  if (elBranch) elBranch.textContent = cls.branch || 'Sede Principal';
 
   validateClientIdent();
 }
@@ -393,6 +397,8 @@ function renderClientConfirm() {
   const col = String(r.spot % 8 === 0 ? 8 : r.spot % 8).padStart(2, '0');
   document.getElementById('conf-spot').textContent = `Fila ${row}, Lugar ${col}`;
   document.getElementById('conf-id').textContent = r.id;
+  const elBranch = document.getElementById('conf-branch');
+  if (elBranch) elBranch.textContent = r.cls.branch || 'Sede Principal';
 
   renderQR(document.getElementById('qrConfirm'));
   showToast('✅ ¡Reserva confirmada! Tu lugar en la sala está asegurado.');
@@ -441,7 +447,7 @@ async function renderClientReservations() {
           <span class="day-card-time">${cls.time || '18:00'}h</span>
         </div>
         <div class="day-card-name">${cls.name || 'Clase de Baile'}</div>
-        <div class="day-card-prof">Prof. ${cls.instructor || 'Instructor'}</div>
+        <div class="day-card-prof">Prof. ${cls.instructor || 'Instructor'} (Sede: ${cls.branch || 'Principal'})</div>
         <div class="day-card-theme" style="background:${cls.level_color || '#ff5a1f'}22;color:${cls.level_color || '#ff5a1f'}">TEMÁTICA: ${cls.theme || 'Beat'}</div>
         
         <div class="my-res-tag" style="margin-top:6px;border-top:1px dashed var(--border);padding-top:8px;">
@@ -540,3 +546,11 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 });
+
+// Al final de js/client.js:
+window.renderClientHome = renderClientHome;
+window.renderSpotSelection = renderSpotSelection;
+window.renderClientIdentification = renderClientIdentification;
+window.renderClientPayment = renderClientPayment;
+window.renderClientConfirm = renderClientConfirm;
+window.renderClientReservations = renderClientReservations;

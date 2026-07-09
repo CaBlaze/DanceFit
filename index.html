@@ -128,7 +128,7 @@
             <div><div class="sidebar-item-label">Instructor</div><div class="sidebar-item-val" id="sb-prof">Instructor</div></div>
             <div><div class="sidebar-item-label">Duración</div><div class="sidebar-item-val" id="sb-dur">90 min</div></div>
             <div><div class="sidebar-item-label">Horario</div><div class="sidebar-item-val" id="sb-time">19:30h</div></div>
-            <div><div class="sidebar-item-label">Sede</div><div class="sidebar-item-val">Norte – Studio A</div></div>
+            <div><div class="sidebar-item-label">Sede</div><div class="sidebar-item-val" id="sb-branch">Norte – Studio A</div></div>
           </div>
 
           <div class="spot-selected-display">
@@ -188,7 +188,7 @@
           <div class="sidebar-instructor" id="ident-cls-inst">Con Instructor</div>
           <div class="sidebar-grid">
             <div><div class="sidebar-item-label">Horario</div><div class="sidebar-item-val" id="ident-time">19:30h</div></div>
-            <div><div class="sidebar-item-label">Sede</div><div class="sidebar-item-val">Norte – Studio A</div></div>
+            <div><div class="sidebar-item-label">Sede</div><div class="sidebar-item-val" id="ident-branch">Norte – Studio A</div></div>
             <div><div class="sidebar-item-label">Spot</div><div class="sidebar-item-val" style="color:var(--accent)" id="ident-spot">#10</div></div>
             <div><div class="sidebar-item-label">Nivel</div><div class="sidebar-item-val" id="ident-level">ADVANCED</div></div>
           </div>
@@ -302,7 +302,7 @@
               <div><div class="confirm-lbl">Instructor</div><div class="confirm-val" id="conf-inst">Instructor</div></div>
               <div><div class="confirm-lbl">Fecha y Hora</div><div class="confirm-val" id="conf-time">Hoy, 19:30h</div></div>
               <div><div class="confirm-lbl">Spot</div><div class="confirm-val accent" id="conf-spot">Spot #10</div></div>
-              <div><div class="confirm-lbl">Sede</div><div class="confirm-val">Norte – Studio A</div></div>
+              <div><div class="confirm-lbl">Sede</div><div class="confirm-val" id="conf-branch">Norte – Studio A</div></div>
               <div><div class="confirm-lbl">ID de Reserva</div><div class="confirm-val" style="font-size:.82rem" id="conf-id">DF-000000-TK</div></div>
             </div>
             
@@ -346,6 +346,147 @@
   <div id="screen-perfil" class="screen"></div>
 
   <!-- ══════════════════════════════════════════
+       PANTALLA NUEVA: DASHBOARD EJECUTIVO (ANALYTICS)
+       ══════════════════════════════════════════ -->
+  <div id="screen-dashboard" class="screen" style="display: none;">
+    <div class="page" style="max-width: 1200px;">
+      
+      <!-- Encabezado del Dashboard -->
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem; flex-wrap: wrap; gap: 1rem;">
+        <div>
+          <h1 class="page-title" style="margin-bottom: 0.3rem;">Dashboard <span>Ejecutivo</span></h1>
+          <p class="page-sub" style="color: #a0a0a0;">Visión general del rendimiento y analíticas del estudio DanceFit.</p>
+        </div>
+        <button class="btn-primary" style="padding: 10px 20px; font-size: 0.9rem; display: flex; align-items: center; gap: 8px;" onclick="descargarInformeEjecutivo()">
+          📥 Descargar Informe Ejecutivo →
+        </button>
+      </div>
+
+      <!-- Fila de Tarjetas de Métricas de Alto Impacto -->
+      <div class="admin-metrics" style="margin-bottom: 2rem;">
+        <!-- KPI 1: Ingresos Recaudados -->
+        <div class="metric-card" style="background: #1a1a1a; border: 1px solid #2d2d2d; border-radius: 12px; padding: 20px; position: relative;">
+          <span style="font-size: 0.75rem; font-weight: 700; color: #a0a0a0; letter-spacing: 0.5px;">INGRESOS RECAUDADOS</span>
+          <div style="display: flex; align-items: baseline; gap: 10px; margin-top: 8px;">
+            <h2 id="dashMetricIngresos" style="font-size: 2rem; font-weight: 800; margin: 0;">S/ 0.00</h2>
+            <span style="color: #00e676; font-size: 0.85rem; font-weight: bold;">↗ +12.4%</span>
+          </div>
+          <p style="font-size: 0.75rem; color: #757575; margin: 4px 0 0 0;">Vs. mes anterior (S/ 38,120)</p>
+          <span style="position: absolute; top: 20px; right: 20px; opacity: 0.3; font-size: 1.2rem;">💵</span>
+        </div>
+
+        <!-- KPI 2: Cupos Reservados -->
+        <div class="metric-card" style="background: #1a1a1a; border: 1px solid #2d2d2d; border-radius: 12px; padding: 20px; position: relative;">
+          <span style="font-size: 0.75rem; font-weight: 700; color: #a0a0a0; letter-spacing: 0.5px;">CUPOS RESERVADOS</span>
+          <h2 id="dashMetricCupos" style="font-size: 2rem; font-weight: 800; margin: 8px 0 4px 0;">0 / 1,800</h2>
+          <!-- Barra de Progreso de Accesibilidad Universal -->
+          <div style="width: 100%; background: #2d2d2d; height: 6px; border-radius: 3px; margin-top: 8px; overflow: hidden;">
+            <div id="dashMetricBarraCupos" style="background: var(--primary, #ff5722); height: 100%; width: 0%; transition: width 0.5s ease;"></div>
+          </div>
+          <p id="dashTxtPorcentajeCupos" style="font-size: 0.75rem; color: #757575; margin: 6px 0 0 0;">0% de la capacidad total mensual</p>
+          <span style="position: absolute; top: 20px; right: 20px; opacity: 0.3; font-size: 1.2rem;">🎟️</span>
+        </div>
+
+        <!-- KPI 3: Tasa de Ocupación -->
+        <div class="metric-card" style="background: #1a1a1a; border: 1px solid #2d2d2d; border-radius: 12px; padding: 20px; position: relative;">
+          <span style="font-size: 0.75rem; font-weight: 700; color: #a0a0a0; letter-spacing: 0.5px;">TASA DE OCUPACIÓN</span>
+          <div style="display: flex; align-items: baseline; gap: 6px; margin-top: 8px;">
+            <h2 id="dashMetricOcupacion" style="font-size: 2rem; font-weight: 800; margin: 0;">0%</h2>
+            <span style="color: #ffb300; font-size: 0.75rem; font-weight: bold; border: 1px solid #ffb300; padding: 1px 4px; border-radius: 4px;">☆ Premium</span>
+          </div>
+          <p style="font-size: 0.75rem; color: #757575; margin: 4px 0 0 0;">Promedio en horario prime (18:00 - 21:00)</p>
+          <span style="position: absolute; top: 20px; right: 20px; opacity: 0.3; font-size: 1.2rem;">📈</span>
+        </div>
+      </div>
+
+      <!-- Gráficos y Secciones Analíticas de Tendencia -->
+      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(450px, 1fr)); gap: 1.5rem; margin-bottom: 2rem;">
+        <!-- Tendencia de Ingresos -->
+        <div class="admin-form-card" style="padding: 24px;">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+            <h3 style="font-family:'Playfair Display', serif; font-size:1.25rem; margin:0;">Tendencia de Ingresos</h3>
+            <select style="background:#1c1c1c; color:#fff; border:1px solid #333; border-radius:6px; padding:4px 8px; font-size:0.8rem;">
+              <option>Últimos 6 meses</option>
+            </select>
+          </div>
+          <div style="height: 180px; display: flex; align-items: flex-end; justify-content: space-between; padding-top: 10px; border-bottom: 1px solid #2d2d2d;">
+            <!-- Simulación de barras/gráficos estéticos limpios -->
+            <div style="width: 12%; background: #2d2d2d; height: 40%; border-radius: 4px 4px 0 0; text-align: center;"><span style="font-size:10px; color:#757575; display:block; margin-top:-18px;">Ene</span></div>
+            <div style="width: 12%; background: #2d2d2d; height: 55%; border-radius: 4px 4px 0 0; text-align: center;"><span style="font-size:10px; color:#757575; display:block; margin-top:-18px;">Feb</span></div>
+            <div style="width: 12%; background: #2d2d2d; height: 48%; border-radius: 4px 4px 0 0; text-align: center;"><span style="font-size:10px; color:#757575; display:block; margin-top:-18px;">Mar</span></div>
+            <div style="width: 12%; background: #2d2d2d; height: 70%; border-radius: 4px 4px 0 0; text-align: center;"><span style="font-size:10px; color:#757575; display:block; margin-top:-18px;">Abr</span></div>
+            <div style="width: 12%; background: var(--primary, #ff5722); height: 85%; border-radius: 4px 4px 0 0; text-align: center;"><span style="font-size:10px; color:var(--primary, #ff5722); font-weight:bold; display:block; margin-top:-18px;">May</span></div>
+            <div style="width: 12%; background: #2d2d2d; height: 65%; border-radius: 4px 4px 0 0; text-align: center;"><span style="font-size:10px; color:#757575; display:block; margin-top:-18px;">Jun</span></div>
+          </div>
+        </div>
+
+        <!-- Asistencia Semanal -->
+        <div class="admin-form-card" style="padding: 24px;">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+            <h3 style="font-family:'Playfair Display', serif; font-size:1.25rem; margin:0;">Asistencia Semanal</h3>
+            <span style="font-size: 0.8rem; color: #a0a0a0; display: flex; align-items: center; gap: 6px;">
+              <span style="width: 8px; height: 8px; background: var(--primary, #ff5722); border-radius: 50%; display: inline-block;"></span> Actual
+            </span>
+          </div>
+          <!-- Representación de curvas visuales con un gradiente lineal CSS -->
+          <div style="height: 180px; width: 100%; background: linear-gradient(180deg, rgba(255,87,34,0.15) 0%, rgba(0,0,0,0) 100%); position: relative; border-bottom: 1px solid #2d2d2d; border-radius: 4px;">
+            <div style="position: absolute; bottom: 0; width: 100%; height: 4px; background: var(--primary, #ff5722); box-shadow: 0 -2px 10px rgba(255,87,34,0.4);"></div>
+            <div style="display: flex; justify-content: space-between; position: absolute; bottom: -20px; width: 100%; font-size: 10px; color: #757575;">
+              <span>Lun</span><span>Mar</span><span>Mie</span><span>Jue</span><span>Vie</span><span>Sab</span><span>Dom</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Fila de Clases y Distribución de Niveles -->
+      <div style="display: grid; grid-template-columns: 1fr 380px; gap: 1.5rem; flex-wrap: wrap;">
+        <!-- Lista de Clases con Mayor Demanda -->
+        <div class="admin-table-card" style="padding: 24px;">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+            <h3 style="font-family:'Playfair Display', serif; font-size:1.25rem; margin:0;">Clases con Mayor Demanda</h3>
+            <a href="#" style="color: var(--primary, #ff5722); font-size: 0.85rem; text-decoration: none;">Ver todas</a>
+          </div>
+          <div id="dashListaMayorDemanda" style="display: flex; flex-direction: column; gap: 1.2rem;">
+            <!-- Renderizado Dinámico mediante JS -->
+          </div>
+        </div>
+
+        <!-- Distribución de Niveles de Intensidad -->
+        <div class="admin-form-card" style="padding: 24px; display: flex; flex-direction: column; justify-content: space-between;">
+          <div>
+            <h3 style="font-family:'Playfair Display', serif; font-size:1.25rem; margin-bottom: 1.5rem;">Distribución de Niveles</h3>
+            <div style="display: flex; flex-direction: column; gap: 1rem;">
+              <div style="display: flex; justify-content: space-between; align-items: center;">
+                <span style="font-size: 0.9rem; color: #cccccc;"><span style="color:#00e676; margin-right:8px;">●</span> Beginner</span>
+                <span style="font-weight: bold; font-size: 0.95rem;">45%</span>
+              </div>
+              <div style="display: flex; justify-content: space-between; align-items: center;">
+                <span style="font-size: 0.9rem; color: #cccccc;"><span style="color:#ff5722; margin-right:8px;">●</span> Open Level</span>
+                <span style="font-weight: bold; font-size: 0.95rem;">35%</span>
+              </div>
+              <div style="display: flex; justify-content: space-between; align-items: center;">
+                <span style="font-size: 0.9rem; color: #cccccc;"><span style="color:#b388ff; margin-right:8px;">●</span> Advanced</span>
+                <span style="font-weight: bold; font-size: 0.95rem;">20%</span>
+              </div>
+            </div>
+          </div>
+          
+          <!-- Tip de Optimización del Sistema -->
+          <div style="background: #1c1c1c; border-radius: 8px; padding: 16px; margin-top: 1.5rem;">
+            <p style="font-size: 0.8rem; color: #a0a0a0; margin: 0 0 12px 0; font-style: italic; line-height: 1.4;">
+              "El nivel principiante ha crecido un 15% este mes."
+            </p>
+            <button class="btn-primary" style="background: #2d2d2d; border: 1px solid #333; width: 100%; padding: 8px; font-size: 0.8rem; color: #fff;" onclick="alert('Abriendo optimizador de franjas horarias...')">
+              Optimizar Horarios
+            </button>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════════════
        PANTALLA: PANEL DE ADMINISTRADOR (EXCLUSIVE DASHBOARD)
        ══════════════════════════════════════════ -->
   <div id="screen-admin" class="screen">
@@ -353,87 +494,292 @@
       <h1 class="page-title">Panel de <span>Administración</span></h1>
       <p class="page-sub">Gestiona la cartelera de clases de baile, audita las reservas de Yape y analiza el negocio.</p>
 
-      <!-- Panel de Métricas de Negocio -->
-      <div class="admin-metrics" id="adminMetrics">
-        <!-- Relleno dinámico: Ingresos, Clase Popular, Ocupación -->
+      <!-- Barra de Pestañas de Admin -->
+      <div class="admin-tabs" style="display: flex; gap: 10px; margin-bottom: 1.8rem; border-bottom: 1px solid var(--border); padding-bottom: 10px; flex-wrap: wrap;">
+        <button class="admin-tab-btn active" id="btn-tab-clases" onclick="switchAdminTab('clases')">📅 Clases</button>
+        <button class="admin-tab-btn" id="btn-tab-profesores" onclick="switchAdminTab('profesores')">👥 Profesores</button>
+        <button class="admin-tab-btn" id="btn-tab-sedes" onclick="switchAdminTab('sedes')">🏢 Sedes</button>
+        <button class="admin-tab-btn" id="btn-tab-economia" onclick="switchAdminTab('economia')">💰 Gestión Económica</button>
+        <button class="admin-tab-btn" id="btn-tab-reservas" onclick="switchAdminTab('reservas')">📋 Auditoría</button>
       </div>
 
-      <div class="admin-layout">
-        <!-- Formulario para Crear Clases -->
-        <div class="admin-form-card">
-          <h3 style="font-family:'Playfair Display', serif; font-size:1.35rem; margin-bottom:1.2rem; border-bottom:1px solid var(--border); padding-bottom:8px;">Programar Clase</h3>
-          <form id="adminClassForm" onsubmit="handleCreateClassSubmission(event)">
-
-            <div class="field" style="margin-bottom:1rem;">
-              <label class="lbl" for="adminClassName">Nombre de Clase</label>
-              <input class="inp" id="adminClassName" type="text" placeholder="Ej. Urban Dance" required>
-            </div>
-
-            <div class="field" style="margin-bottom:1rem;">
-              <label class="lbl" for="adminClassStyle">Estilo de Baile</label>
-              <select class="inp" id="adminClassStyle" required>
-                <option value="Reggaetón">Reggaetón</option>
-                <option value="Salsa">Salsa</option>
-                <option value="Bachata">Bachata</option>
-                <option value="Urbano">Urbano</option>
-                <option value="Funcional">Funcional</option>
-              </select>
-            </div>
-
-            <div class="field" style="margin-bottom:1rem;">
-              <label class="lbl" for="adminClassLevel">Nivel de Intensidad</label>
-              <select class="inp" id="adminClassLevel" required>
-                <option value="BEGINNER">Principiante (BEGINNER)</option>
-                <option value="OPEN LEVEL">Nivel Abierto (OPEN LEVEL)</option>
-                <option value="ADVANCED">Avanzado (ADVANCED)</option>
-                <option value="SPECIAL WORKSHOP">Masterclass (SPECIAL WORKSHOP)</option>
-              </select>
-            </div>
-
-            <div class="field" style="margin-bottom:1rem;">
-              <label class="lbl" for="adminClassPrice">Precio Clase (S/)</label>
-              <input class="inp" id="adminClassPrice" type="number" value="25" min="1" step="0.50" required>
-            </div>
-
-            <!-- Fecha y Hora en paralelo -->
-            <div style="display:grid; grid-template-columns:1fr 1fr; gap:0.75rem; margin-bottom:1rem;">
-              <div class="field">
-                <label class="lbl" for="adminClassDate">📅 Fecha de la Clase</label>
-                <input class="inp" id="adminClassDate" type="date" required>
-              </div>
-              <div class="field">
-                <label class="lbl" for="adminClassTime">🕐 Hora de Inicio</label>
-                <input class="inp" id="adminClassTime" type="time" required>
-              </div>
-            </div>
-
-            <div class="field" style="margin-bottom:1rem;">
-              <label class="lbl" for="adminClassDuration">Duración de la Clase</label>
-              <select class="inp" id="adminClassDuration" required>
-                <option value="45 min">45 minutos</option>
-                <option value="60 min" selected>60 minutos</option>
-                <option value="75 min">75 minutos</option>
-                <option value="90 min">90 minutos</option>
-                <option value="120 min">2 horas (Masterclass)</option>
-              </select>
-            </div>
-
-            <div class="field" style="margin-bottom:1rem;">
-              <label class="lbl" for="adminClassInstructor">Instructor</label>
-              <input class="inp" id="adminClassInstructor" type="text" placeholder="Ej. Elena Márquez" required>
-            </div>
-
-            <div class="field" style="margin-bottom:1rem;">
-              <label class="lbl" for="adminClassTheme">Temática / Estética</label>
-              <input class="inp" id="adminClassTheme" type="text" placeholder="Ej. Cyber Vibe" required>
-            </div>
-
-            <button class="btn-primary" id="adminBtnCreateClass" style="width:100%; padding:12px; margin-top:0.8rem;" type="submit">
-              Crear y Publicar Clase →
-            </button>
-          </form>
+      <!-- PANEL 1: PROGRAMAR CLASES -->
+      <div id="admin-panel-clases" class="admin-panel-content">
+        <!-- Panel de Métricas de Negocio -->
+        <div class="admin-metrics" id="adminMetrics" style="margin-bottom: 2rem;">
+          <!-- Relleno dinámico: Ingresos, Clase Popular, Ocupación -->
         </div>
 
+        <div class="admin-layout">
+          <!-- Formulario para Crear Clases -->
+          <div class="admin-form-card">
+            <h3 style="font-family:'Playfair Display', serif; font-size:1.35rem; margin-bottom:1.2rem; border-bottom:1px solid var(--border); padding-bottom:8px;">Programar Clase</h3>
+            <form id="adminClassForm" onsubmit="handleCreateClassSubmission(event)">
+              <div class="field" style="margin-bottom:1rem;">
+                <label class="lbl" for="adminClassName">Nombre de Clase</label>
+                <input class="inp" id="adminClassName" type="text" placeholder="Ej. Urban Dance" required>
+              </div>
+              <div class="field" style="margin-bottom:1rem;">
+                <label class="lbl" for="adminClassStyle">Estilo de Baile</label>
+                <select class="inp" id="adminClassStyle" required>
+                  <option value="Reggaetón">Reggaetón</option>
+                  <option value="Salsa">Salsa</option>
+                  <option value="Bachata">Bachata</option>
+                  <option value="Urbano">Urbano</option>
+                  <option value="Funcional">Funcional</option>
+                </select>
+              </div>
+              <div class="field" style="margin-bottom:1rem;">
+                <label class="lbl" for="adminClassLevel">Nivel de Intensidad</label>
+                <select class="inp" id="adminClassLevel" required>
+                  <option value="BEGINNER">Principiante (BEGINNER)</option>
+                  <option value="OPEN LEVEL">Nivel Abierto (OPEN LEVEL)</option>
+                  <option value="ADVANCED">Avanzado (ADVANCED)</option>
+                  <option value="SPECIAL WORKSHOP">Masterclass (SPECIAL WORKSHOP)</option>
+                </select>
+              </div>
+              <div class="field" style="margin-bottom:1rem;">
+                <label class="lbl" for="adminClassPrice">Precio Clase (S/)</label>
+                <input class="inp" id="adminClassPrice" type="number" value="25" min="1" step="0.50" required>
+              </div>
+              <!-- Fecha y Hora en paralelo -->
+              <div style="display:grid; grid-template-columns:1fr 1fr; gap:0.75rem; margin-bottom:1rem;">
+                <div class="field">
+                  <label class="lbl" for="adminClassDate">📅 Fecha de la Clase</label>
+                  <input class="inp" id="adminClassDate" type="date" required>
+                </div>
+                <div class="field">
+                  <label class="lbl" for="adminClassTime">🕐 Hora de Inicio</label>
+                  <input class="inp" id="adminClassTime" type="time" required>
+                </div>
+              </div>
+              <div class="field" style="margin-bottom:1rem;">
+                <label class="lbl" for="adminClassDuration">Duración de la Clase</label>
+                <select class="inp" id="adminClassDuration" required>
+                  <option value="45 min">45 minutos</option>
+                  <option value="60 min" selected>60 minutos</option>
+                  <option value="75 min">75 minutos</option>
+                  <option value="90 min">90 minutos</option>
+                  <option value="120 min">2 horas (Masterclass)</option>
+                </select>
+              </div>
+              <div class="field" style="margin-bottom:1rem;">
+                <label class="lbl" for="adminClassInstructorId">Instructor (Profesor)</label>
+                <select class="inp" id="adminClassInstructorId" required>
+                  <!-- Se llena dinámicamente -->
+                </select>
+              </div>
+              <div class="field" style="margin-bottom:1rem;">
+                <label class="lbl" for="adminClassBranchId">Sede / Local</label>
+                <select class="inp" id="adminClassBranchId" required>
+                  <!-- Se llena dinámicamente -->
+                </select>
+              </div>
+              <div class="field" style="margin-bottom:1rem;">
+                <label class="lbl" for="adminClassTheme">Temática / Estética</label>
+                <input class="inp" id="adminClassTheme" type="text" placeholder="Ej. Cyber Vibe" required>
+              </div>
+              <button class="btn-primary" id="adminBtnCreateClass" style="width:100%; padding:12px; margin-top:0.8rem;" type="submit">
+                Crear y Publicar Clase →
+              </button>
+            </form>
+          </div>
+          <!-- Lista de Clases Existentes -->
+          <div class="admin-table-card">
+            <h3 style="font-family:'Playfair Display', serif; font-size:1.35rem; margin-bottom:1.5rem;">Clases Programadas</h3>
+            <table class="admin-table">
+              <thead>
+                <tr>
+                  <th>Clase / Estilo</th>
+                  <th>Profesor / Sede</th>
+                  <th>Fecha y Hora</th>
+                  <th>Precio</th>
+                  <th style="text-align: center;">Acción</th>
+                </tr>
+              </thead>
+              <tbody id="adminClassesTableBody">
+                <!-- Relleno dinámico de clases programadas -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- PANEL 2: GESTIONAR PROFESORES -->
+      <div id="admin-panel-profesores" class="admin-panel-content" style="display: none;">
+        <div class="admin-layout">
+          <!-- Formulario Profesores -->
+          <div class="admin-form-card">
+            <h3 id="teacherFormTitle" style="font-family:'Playfair Display', serif; font-size:1.35rem; margin-bottom:1.2rem; border-bottom:1px solid var(--border); padding-bottom:8px;">Agregar Profesor</h3>
+            <form id="adminTeacherForm" onsubmit="handleCreateOrEditInstructor(event)">
+              <input type="hidden" id="adminTeacherId">
+              <div class="field" style="margin-bottom:1rem;">
+                <label class="lbl" for="adminTeacherName">Nombre y Apellido</label>
+                <input class="inp" id="adminTeacherName" type="text" placeholder="Ej. Carlos Rivera" required>
+              </div>
+              <div class="field" style="margin-bottom:1rem;">
+                <label class="lbl" for="adminTeacherRole">Especialidad / Rol</label>
+                <input class="inp" id="adminTeacherRole" type="text" placeholder="Ej. Salsa Pro Coach" required>
+              </div>
+              <div style="display: flex; gap: 10px;">
+                <button class="btn-primary" id="adminBtnSaveTeacher" style="flex: 1; padding:12px;" type="submit">
+                  Guardar Profesor →
+                </button>
+                <button class="btn-secondary" id="adminBtnCancelTeacher" style="display: none; padding:12px;" type="button" onclick="resetTeacherForm()">
+                  Cancelar
+                </button>
+              </div>
+            </form>
+          </div>
+          <!-- Lista de Profesores -->
+          <div class="admin-table-card">
+            <h3 style="font-family:'Playfair Display', serif; font-size:1.35rem; margin-bottom:1.5rem;">Instructores del Estudio</h3>
+            <table class="admin-table">
+              <thead>
+                <tr>
+                  <th>ID</th>
+                  <th>Nombre</th>
+                  <th>Especialidad</th>
+                  <th style="text-align: center;">Acciones</th>
+                </tr>
+              </thead>
+              <tbody id="adminInstructorsTableBody">
+                <!-- Relleno dinámico -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- PANEL 3: GESTIONAR SEDES -->
+      <div id="admin-panel-sedes" class="admin-panel-content" style="display: none;">
+        <div class="admin-layout">
+          <!-- Formulario Sedes -->
+          <div class="admin-form-card">
+            <h3 id="branchFormTitle" style="font-family:'Playfair Display', serif; font-size:1.35rem; margin-bottom:1.2rem; border-bottom:1px solid var(--border); padding-bottom:8px;">Agregar Sede</h3>
+            <form id="adminBranchForm" onsubmit="handleCreateOrEditBranch(event)">
+              <input type="hidden" id="adminBranchId">
+              <div class="field" style="margin-bottom:1rem;">
+                <label class="lbl" for="adminBranchName">Nombre de la Sede</label>
+                <input class="inp" id="adminBranchName" type="text" placeholder="Ej. Sede Norte" required>
+              </div>
+              <div class="field" style="margin-bottom:1rem;">
+                <label class="lbl" for="adminBranchAddress">Dirección</label>
+                <input class="inp" id="adminBranchAddress" type="text" placeholder="Ej. Av. Alfredo Mendiola 3600" required>
+              </div>
+              <div style="display: flex; gap: 10px;">
+                <button class="btn-primary" id="adminBtnSaveBranch" style="flex: 1; padding:12px;" type="submit">
+                  Guardar Sede →
+                </button>
+                <button class="btn-secondary" id="adminBtnCancelBranch" style="display: none; padding:12px;" type="button" onclick="resetBranchForm()">
+                  Cancelar
+                </button>
+              </div>
+            </form>
+          </div>
+          <!-- Lista de Sedes -->
+          <div class="admin-table-card">
+            <h3 style="font-family:'Playfair Display', serif; font-size:1.35rem; margin-bottom:1.5rem;">Sedes del Estudio</h3>
+            <table class="admin-table">
+              <thead>
+                <tr>
+                  <th>ID</th>
+                  <th>Nombre</th>
+                  <th>Dirección</th>
+                  <th style="text-align: center;">Acciones</th>
+                </tr>
+              </thead>
+              <tbody id="adminBranchesTableBody">
+                <!-- Relleno dinámico -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- PANEL 4: GESTIÓN ECONÓMICA -->
+      <div id="admin-panel-economia" class="admin-panel-content" style="display: none;">
+        <!-- Fila de Tarjetas Financieras -->
+        <div class="admin-metrics" style="margin-bottom: 2rem;">
+          <div class="metric-card" style="background: #1a1a1a; border: 1px solid #2d2d2d; border-radius: 12px; padding: 20px; position: relative;">
+            <span style="font-size: 0.75rem; font-weight: 700; color: #a0a0a0; letter-spacing: 0.5px;">INGRESOS BRUTOS</span>
+            <h2 id="ecoMetricIngresos" style="font-size: 2rem; font-weight: 800; margin: 8px 0 0 0; color: #2dc653;">S/ 0.00</h2>
+            <p style="font-size: 0.75rem; color: #757575; margin: 6px 0 0 0;">Recaudación total de reservas</p>
+            <span style="position: absolute; top: 20px; right: 20px; font-size: 1.2rem;">💰</span>
+          </div>
+          <div class="metric-card" style="background: #1a1a1a; border: 1px solid #2d2d2d; border-radius: 12px; padding: 20px; position: relative;">
+            <span style="font-size: 0.75rem; font-weight: 700; color: #a0a0a0; letter-spacing: 0.5px;">EGRESOS OPERATIVOS</span>
+            <h2 id="ecoMetricEgresos" style="font-size: 2rem; font-weight: 800; margin: 8px 0 0 0; color: #e63946;">S/ 0.00</h2>
+            <p style="font-size: 0.75rem; color: #757575; margin: 6px 0 0 0;">Pago a profesores (S/50/clase) + Sedes (S/150)</p>
+            <span style="position: absolute; top: 20px; right: 20px; font-size: 1.2rem;">💸</span>
+          </div>
+          <div class="metric-card" style="background: #1a1a1a; border: 1px solid #2d2d2d; border-radius: 12px; padding: 20px; position: relative;">
+            <span style="font-size: 0.75rem; font-weight: 700; color: #a0a0a0; letter-spacing: 0.5px;">UTILIDAD NETA</span>
+            <h2 id="ecoMetricUtilidad" style="font-size: 2rem; font-weight: 800; margin: 8px 0 0 0; color: #00e676;">S/ 0.00</h2>
+            <p style="font-size: 0.75rem; color: #757575; margin: 6px 0 0 0;">Ganancia neta real del negocio</p>
+            <span style="position: absolute; top: 20px; right: 20px; font-size: 1.2rem;">📈</span>
+          </div>
+        </div>
+
+        <div style="display: grid; grid-template-columns: 1fr 380px; gap: 1.5rem; margin-bottom: 2rem; flex-wrap: wrap;">
+          <!-- Tabla de ingresos por Sede -->
+          <div class="admin-table-card" style="padding: 24px;">
+            <h3 style="font-family:'Playfair Display', serif; font-size:1.25rem; margin-bottom:1.5rem;">Ingresos por Sede</h3>
+            <table class="admin-table">
+              <thead>
+                <tr>
+                  <th>Sede / Dirección</th>
+                  <th style="text-align: center;">Reservas</th>
+                  <th style="text-align: right;">Ingreso Bruto</th>
+                </tr>
+              </thead>
+              <tbody id="ecoBranchesTableBody">
+                <!-- Relleno dinámico -->
+              </tbody>
+            </table>
+          </div>
+          <!-- Resumen de rentabilidad general -->
+          <div class="admin-form-card" style="padding: 24px; display: flex; flex-direction: column; justify-content: space-between;">
+            <div>
+              <h3 style="font-family:'Playfair Display', serif; font-size:1.25rem; margin-bottom: 1rem;">Balance Operativo</h3>
+              <p style="font-size: 0.88rem; color: var(--text-muted); line-height: 1.6; margin-bottom: 1.2rem;">
+                Los ingresos brutos se calculan directamente en base al precio de cada reserva. Los egresos operativos incluyen:
+              </p>
+              <ul style="font-size: 0.85rem; color: var(--text-muted); margin-left: 1.2rem; line-height: 1.8; margin-bottom: 1.5rem;">
+                <li><b>Pago a Instructores:</b> S/ 50.00 fijos por cada clase creada.</li>
+                <li><b>Mantenimiento de Sedes:</b> S/ 150.00 fijos por cada sede registrada.</li>
+              </ul>
+            </div>
+            <button class="btn-primary" style="width: 100%; padding: 12px; font-size: 0.9rem;" onclick="alert('Descargando reporte financiero consolidado...')">
+              📥 Descargar Reporte Utilidades →
+            </button>
+          </div>
+        </div>
+
+        <!-- Tabla detallada de ingresos por clase -->
+        <div class="admin-table-card" style="padding: 24px;">
+          <h3 style="font-family:'Playfair Display', serif; font-size:1.25rem; margin-bottom:1.5rem;">Desglose Financiero por Clase</h3>
+          <table class="admin-table">
+            <thead>
+              <tr>
+                <th>Clase / Estilo</th>
+                <th>Sede / Local</th>
+                <th>Instructor</th>
+                <th style="text-align: center;">Reservas</th>
+                <th style="text-align: right;">Ingreso Bruto</th>
+                <th style="text-align: right;">Egresos (S/ 50)</th>
+                <th style="text-align: right;">Utilidad Neta</th>
+              </tr>
+            </thead>
+            <tbody id="ecoClassesTableBody">
+              <!-- Relleno dinámico -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- PANEL 5: AUDITORÍA DE RESERVAS -->
+      <div id="admin-panel-reservas" class="admin-panel-content" style="display: none;">
         <!-- Tabla de Reservas del Sistema -->
         <div class="admin-table-card">
           <h3 style="font-family:'Playfair Display', serif; font-size:1.35rem; margin-bottom:1.5rem;">Auditoría de Reservas</h3>
@@ -454,6 +800,7 @@
           </table>
         </div>
       </div>
+
     </div>
   </div>
 
@@ -465,15 +812,15 @@
   <script src="js/config.js?v=2"></script>
   
   <!-- Adaptador para conectar y recuperar datos de Supabase -->
-  <script src="js/supabase-db.js"></script>
+  <script src="js/supabase-db.js" type="module"></script>
   
   <!-- Módulos de lógica organizados -->
-  <script src="js/auth.js"></script>
-  <script src="js/client.js"></script>
-  <script src="js/admin.js"></script>
-  <script src="js/profile.js"></script>
+  <script src="js/auth.js" type="module"></script>
+  <script src="js/client.js" type="module"></script>
+  <script src="js/admin.js" type="module"></script>
+  <script src="js/profile.js" type="module"></script>
   
   <!-- Inicializador y Router unificador de pantallas -->
-  <script src="js/app.js"></script>
+  <script src="js/app.js" type="module"></script>
 </body>
 </html>

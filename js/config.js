@@ -4,3 +4,4 @@
 
 const SUPABASE_URL = "https://btsaihppdvbehkjxvuzi.supabase.co";
 const SUPABASE_ANON_KEY = "sb_publishable_NgxO354_aJ9ZFu7LuREVpQ_wa0UceNS";
+

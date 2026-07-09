@@ -4,7 +4,7 @@ const DEMO_ADMIN = { id: "admin-demo-id", email: "admin@dancefit.com", name: "Ad
 const DEMO_CLIENT = { id: "client-demo-id", email: "cliente@dancefit.com", name: "Martina García", dni: "76543210", role: "client" };
 
 // Asegurar que existan perfiles de demo locales
-if (isDemoMode && !localStorage.getItem("df_profiles_demo")) {
+if (window.isDemoMode && !localStorage.getItem("df_profiles_demo")) {
   localStorage.setItem("df_profiles_demo", JSON.stringify([DEMO_ADMIN, DEMO_CLIENT]));
 }
 
@@ -16,7 +16,7 @@ function getSessionUser() {
 
 // Iniciar sesión
 async function loginUser(email, password) {
-  if (isDemoMode) {
+  if (window.isDemoMode) {
     const profiles = JSON.parse(localStorage.getItem("df_profiles_demo") || "[]");
     // Simulamos que la contraseña correcta es "123456" o igual al rol + "123"
     const user = profiles.find(p => p.email === email.trim().toLowerCase());
@@ -130,3 +130,13 @@ async function logoutUser() {
     await dbClient.auth.signOut();
   }
 }
+
+// Al final de todo tu archivo js/auth.js:
+window.getSessionUser = getSessionUser;
+window.loginUser = loginUser;
+window.registerUser = registerUser;
+window.logoutUser = logoutUser;
+window.renderAuthScreen = renderAuthScreen;
+window.switchAuthMode = switchAuthMode;
+window.handleAuthSubmit = handleAuthSubmit;
+window.handleLogout = handleLogout;
