@@ -41,6 +41,13 @@ app.post('/api/create-preference', async (req, res) => {
     origin = 'http://127.0.0.1:5500';
   }
 
+  // En producción (token APP_USR), Mercado Pago exige obligatoriamente redireccionamientos HTTPS.
+  // Si probamos en local (http://localhost o http://127.0.0.1), forzamos un retorno seguro al dominio de producción.
+  const isProdToken = process.env.MP_ACCESS_TOKEN && process.env.MP_ACCESS_TOKEN.startsWith('APP_USR');
+  const baseOrigin = (isProdToken && !origin.startsWith('https'))
+    ? 'https://cablaze.github.io/DanceFit'
+    : origin;
+
   try {
     const preference = new Preference(mpClient);
     
@@ -57,9 +64,9 @@ app.post('/api/create-preference', async (req, res) => {
           }
         ],
         back_urls: {
-          success: `${origin}/index.html?payment=success&classId=${classId}&spot=${spotNumber}&profileId=${profileId}`,
-          failure: `${origin}/index.html?payment=failure`,
-          pending: `${origin}/index.html?payment=pending`
+          success: `${baseOrigin}/index.html?payment=success&classId=${classId}&spot=${spotNumber}&profileId=${profileId}`,
+          failure: `${baseOrigin}/index.html?payment=failure`,
+          pending: `${baseOrigin}/index.html?payment=pending`
         },
         auto_return: 'approved',
         // metadata guarda los datos clave para insertarlos tras el cobro
