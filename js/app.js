@@ -382,3 +382,4 @@ window.switchAuthMode = switchAuthMode;
 window.handleAuthSubmit = handleAuthSubmit;
 window.toggleTheme = toggleTheme;
 window.handleLogout = handleLogout;
+window.showToast = showToast;
