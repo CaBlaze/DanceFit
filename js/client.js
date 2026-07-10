@@ -738,7 +738,7 @@ async function handleMpPaymentInit() {
   btn.textContent = 'Conectando con Mercado Pago...';
 
   try {
-    const response = await fetch('http://localhost:3000/api/create-preference', {
+    const response = await fetch('https://dancefit.onrender.com/api/create-preference', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json'

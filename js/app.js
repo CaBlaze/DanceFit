@@ -326,7 +326,7 @@ async function checkMercadoPagoCallback() {
     if (classId && spot && profileId) {
       showToast('🔄 Sincronizando reserva con Mercado Pago...');
       try {
-        const response = await fetch('http://localhost:3000/api/confirm-payment', {
+        const response = await fetch('https://dancefit.onrender.com/api/confirm-payment', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
