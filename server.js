@@ -33,6 +33,21 @@ app.get('/api/test-db', async (req, res) => {
   }
 });
 
+// ── RUTA DE DIAGNÓSTICO DE SALUD Y CONFIGURACIÓN ──
+app.get('/api/health', (req, res) => {
+  const token = process.env.MP_ACCESS_TOKEN || '';
+  const tokenPrefix = token.substring(0, 12);
+  const isProd = token.startsWith('APP_USR');
+  
+  res.json({
+    success: true,
+    message: 'Backend de DanceFit activo',
+    tokenPrefix: tokenPrefix + '...',
+    isProdToken: isProd,
+    originReceived: req.headers.origin || 'none'
+  });
+});
+
 // ── RUTA 2: CREAR PREFERENCIA DE PAGO (CHECKOUT PRO) ──
 app.post('/api/create-preference', async (req, res) => {
   const { classId, className, price, spotNumber, profileId } = req.body;
