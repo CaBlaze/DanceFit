@@ -36,7 +36,10 @@ app.get('/api/test-db', async (req, res) => {
 // ── RUTA 2: CREAR PREFERENCIA DE PAGO (CHECKOUT PRO) ──
 app.post('/api/create-preference', async (req, res) => {
   const { classId, className, price, spotNumber, profileId } = req.body;
-  const origin = req.headers.origin || 'http://localhost:8000';
+  let origin = req.headers.origin || 'http://localhost:8000';
+  if (origin === 'null' || !origin.startsWith('http')) {
+    origin = 'http://127.0.0.1:5500';
+  }
 
   try {
     const preference = new Preference(mpClient);
