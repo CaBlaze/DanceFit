@@ -84,6 +84,13 @@ app.post('/api/create-preference', async (req, res) => {
           pending: `${baseOrigin}/index.html?payment=pending`
         },
         auto_return: 'approved',
+        payment_methods: {
+          default_payment_method_id: 'yape',
+          excluded_payment_types: [
+            { id: 'ticket' },
+            { id: 'bank_transfer' }
+          ]
+        },
         // metadata guarda los datos clave para insertarlos tras el cobro
         metadata: {
           profile_id: profileId,
