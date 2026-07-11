@@ -102,7 +102,7 @@ window.descargarInformeEjecutivo = function() {
     if (typeof html2pdf === 'undefined') {
         showToast('⚡ Cargando motor de PDF...');
         const script = document.createElement('script');
-        script.src = 'https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js';
+        script.src = 'https://cdn.jsdelivr.net/npm/html2pdf.js@0.10.1/dist/html2pdf.bundle.min.js';
         script.onload = () => {
             generarPDF();
         };
