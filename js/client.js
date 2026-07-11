@@ -73,13 +73,19 @@ async function renderClientHome() {
     const allClasses = await getClasses();
     grid.innerHTML = '';
 
+    const now = new Date();
+
     // 1. Filtrar clases por categoría/estilo
     let filtered = state.activeFilter === 'Todos'
       ? allClasses
       : allClasses.filter(c => c.style === state.activeFilter || c.name.toLowerCase().includes(state.activeFilter.toLowerCase()));
 
-    // 2. Filtrar clases por fecha (Hoy / Semana / Mes)
-    filtered = filtered.filter(c => fitsDateFilter(c.class_date, state.dateFilter));
+    // 2. Filtrar clases por fecha (Hoy / Semana / Mes) y excluir las pasadas
+    filtered = filtered.filter(c => {
+      const classDateTime = new Date(`${c.class_date}T${c.time}:00`);
+      if (classDateTime < now) return false;
+      return fitsDateFilter(c.class_date, state.dateFilter);
+    });
 
     if (filtered.length === 0) {
       grid.innerHTML = '<p style="color:var(--text-muted);grid-column:1/-1;text-align:center;padding:2rem">No hay clases programadas para los filtros seleccionados.</p>';
@@ -137,7 +143,13 @@ async function renderClientHome() {
 async function handleStartReservation(className) {
   try {
     const allClasses = await getClasses();
-    const instances = allClasses.filter(c => c.name === className);
+    const now = new Date();
+    const instances = allClasses.filter(c => {
+      if (c.name !== className) return false;
+      const classDateTime = new Date(`${c.class_date}T${c.time}:00`);
+      return classDateTime >= now;
+    });
+
     if (instances.length === 0) {
       showToast('⚠️ No hay horarios disponibles para esta clase.');
       return;
