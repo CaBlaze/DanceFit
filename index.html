@@ -84,6 +84,14 @@
     <div class="section" id="clases-secc">
       <h2 class="section-title">Próximas Clases</h2>
       <p class="section-sub">Encuentra tu estilo y reserva tu lugar en la pista.</p>
+      <!-- Barra de Filtros Temporales (Hoy / Semana / Mes) -->
+      <div class="filter-bar" id="dateFilterBar" style="justify-content: center; margin-bottom: 1.5rem;">
+        <button class="filter-btn active" id="date-filter-todos" onclick="filterClassesByDate('todos')">📅 Todas las fechas</button>
+        <button class="filter-btn" id="date-filter-hoy" onclick="filterClassesByDate('hoy')">⚡ Hoy</button>
+        <button class="filter-btn" id="date-filter-semana" onclick="filterClassesByDate('semana')">🗓️ Esta Semana</button>
+        <button class="filter-btn" id="date-filter-mes" onclick="filterClassesByDate('mes')">📆 Este Mes</button>
+      </div>
+
       <div class="filter-row" id="filterRow"></div>
       <div class="classes-grid" id="classesGrid"></div>
     </div>
@@ -866,6 +874,38 @@
         </div>
       </div>
 
+    </div>
+  </div>
+
+  <!-- ── MODAL SELECCIONADOR DE HORARIOS Y SEDES ── -->
+  <div id="scheduleSelectorModal" class="schedule-modal-overlay" role="dialog" aria-modal="true" aria-labelledby="scheduleModalTitle">
+    <div class="schedule-modal-card">
+      <div class="schedule-modal-header">
+        <button class="schedule-modal-close" onclick="closeScheduleModal()">✕</button>
+        <h2 class="schedule-modal-title" id="scheduleModalTitle">Elige tu Horario</h2>
+        <p class="schedule-modal-sub" id="scheduleModalSub">Selecciona la sede y el horario de tu preferencia.</p>
+      </div>
+      <div class="schedule-modal-body">
+        <!-- Selector de Sede -->
+        <div class="schedule-field-group">
+          <label class="schedule-label" for="selectBranch">1. Selecciona la Sede</label>
+          <select class="schedule-select" id="selectBranch" onchange="populateAvailableTimes()">
+            <!-- Relleno dinámico de sedes disponibles -->
+          </select>
+        </div>
+        <!-- Selector de Fecha/Hora -->
+        <div class="schedule-field-group">
+          <label class="schedule-label" for="selectTime">2. Selecciona fecha y hora</label>
+          <select class="schedule-select" id="selectTime">
+            <!-- Relleno dinámico de horarios disponibles -->
+          </select>
+        </div>
+      </div>
+      <div class="schedule-modal-footer">
+        <button class="btn-primary" style="width:100%; padding:14px; font-weight:700;" onclick="confirmScheduleSelection()">
+          Confirmar Horario y Continuar →
+        </button>
+      </div>
     </div>
   </div>
 

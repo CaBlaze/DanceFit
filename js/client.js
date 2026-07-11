@@ -1,6 +1,37 @@
 // ── DANCEFIT STUDIO - CONTROLADOR DE VISTAS Y FLUJO DEL CLIENTE ──
 
 const CLIENT_FILTERS = ['Todos', 'Salsa', 'Bachata', 'Reggaetón', 'Funcional', 'Urbano'];
+let currentModalInstances = [];
+
+// Función para verificar filtros de fechas
+function fitsDateFilter(classDateStr, filter) {
+  if (filter === 'todos') return true;
+  if (!classDateStr) return false;
+
+  const classDate = new Date(classDateStr + 'T00:00:00');
+  const today = new Date();
+  today.setHours(0,0,0,0);
+
+  const classTime = classDate.getTime();
+  const todayTime = today.getTime();
+
+  if (filter === 'hoy') {
+    const todayStr = today.toISOString().split('T')[0];
+    return classDateStr === todayStr;
+  }
+
+  if (filter === 'semana') {
+    const nextWeek = new Date(today);
+    nextWeek.setDate(today.getDate() + 7);
+    return classTime >= todayTime && classTime <= nextWeek.getTime();
+  }
+
+  if (filter === 'mes') {
+    return classDate.getFullYear() === today.getFullYear() && classDate.getMonth() === today.getMonth();
+  }
+
+  return true;
+}
 
 // ── RENDERIZAR VISTA DE CLASES (HOME CLIENTE) ──
 async function renderClientHome() {
@@ -8,6 +39,11 @@ async function renderClientHome() {
   if (!user) {
     goTo('login');
     return;
+  }
+
+  // Asegurar valor inicial para el filtro temporal si no existe
+  if (!state.dateFilter) {
+    state.dateFilter = 'todos';
   }
 
   // Actualizar UI del Header
@@ -37,17 +73,30 @@ async function renderClientHome() {
     const allClasses = await getClasses();
     grid.innerHTML = '';
 
-    // Filtrar clases
-    const filtered = state.activeFilter === 'Todos'
+    // 1. Filtrar clases por categoría/estilo
+    let filtered = state.activeFilter === 'Todos'
       ? allClasses
       : allClasses.filter(c => c.style === state.activeFilter || c.name.toLowerCase().includes(state.activeFilter.toLowerCase()));
 
+    // 2. Filtrar clases por fecha (Hoy / Semana / Mes)
+    filtered = filtered.filter(c => fitsDateFilter(c.class_date, state.dateFilter));
+
     if (filtered.length === 0) {
-      grid.innerHTML = '<p style="color:var(--text-muted);grid-column:1/-1;text-align:center;padding:2rem">No hay clases programadas para esta categoría en este momento.</p>';
+      grid.innerHTML = '<p style="color:var(--text-muted);grid-column:1/-1;text-align:center;padding:2rem">No hay clases programadas para los filtros seleccionados.</p>';
       return;
     }
 
-    filtered.forEach(cls => {
+    // 3. Agrupar clases por nombre único para mostrar como catálogo
+    const uniqueClasses = [];
+    const seenNames = new Set();
+    filtered.forEach(c => {
+      if (!seenNames.has(c.name)) {
+        seenNames.add(c.name);
+        uniqueClasses.push(c);
+      }
+    });
+
+    uniqueClasses.forEach(cls => {
       const card = document.createElement('div');
       card.className = 'class-card';
       const initials = cls.instructor.split(' ').slice(0, 2).map(w => w[0]).join('');
@@ -55,7 +104,7 @@ async function renderClientHome() {
         <div class="card-img">
           <div class="card-emoji">${cls.emoji}</div>
           <span class="card-level" style="background:${cls.level_color || '#ff5a1f'}22;color:${cls.level_color || '#ff5a1f'}">${cls.level}</span>
-          <span class="card-time">${cls.time}</span>
+          <span class="card-time">📅 Disponible</span>
         </div>
         <div class="card-body">
           <div class="card-theme">Temática: ${cls.theme}</div>
@@ -69,13 +118,13 @@ async function renderClientHome() {
           </div>
           <div class="card-footer">
             <span class="price-chip">S/ ${formatPrice(cls.price)}</span>
-            <button class="reserve-btn" data-id="${cls.id}">${cls.level === 'SPECIAL WORKSHOP' ? 'Reservar Masterclass ☆' : 'Reservar →'}</button>
+            <button class="reserve-btn" data-id="${cls.id}">Ver Horarios →</button>
           </div>
         </div>`;
 
       card.querySelector('.reserve-btn').onclick = (e) => {
         e.stopPropagation();
-        handleStartReservation(cls);
+        handleStartReservation(cls.name);
       };
       grid.appendChild(card);
     });
@@ -84,11 +133,128 @@ async function renderClientHome() {
   }
 }
 
-// Iniciar proceso de reserva
-function handleStartReservation(cls) {
-  state.selectedClass = cls;
-  state.selectedSpot = null;
-  goTo('spot');
+// Iniciar proceso de reserva (Abre el modal de horarios)
+async function handleStartReservation(className) {
+  try {
+    const allClasses = await getClasses();
+    const instances = allClasses.filter(c => c.name === className);
+    if (instances.length === 0) {
+      showToast('⚠️ No hay horarios disponibles para esta clase.');
+      return;
+    }
+
+    currentModalInstances = instances;
+
+    // Obtener sedes únicas asociadas a estos horarios
+    const sedes = [];
+    const seenSedes = new Set();
+    const allBranches = await getBranches();
+
+    instances.forEach(inst => {
+      const branchObj = allBranches.find(b => b.id === inst.branch_id);
+      const branchName = branchObj ? branchObj.name : 'Sede Principal';
+      if (!seenSedes.has(branchName)) {
+        seenSedes.add(branchName);
+        sedes.push({ id: inst.branch_id, name: branchName });
+      }
+    });
+
+    const selectBranch = document.getElementById('selectBranch');
+    if (selectBranch) {
+      selectBranch.innerHTML = '';
+      sedes.forEach(s => {
+        const opt = document.createElement('option');
+        opt.value = s.id;
+        opt.textContent = s.name;
+        selectBranch.appendChild(opt);
+      });
+    }
+
+    populateAvailableTimes();
+
+    const modal = document.getElementById('scheduleSelectorModal');
+    if (modal) modal.classList.add('open');
+  } catch (err) {
+    console.error('Error al iniciar reserva:', err);
+    showToast('❌ Error al cargar los horarios.');
+  }
+}
+
+// Llenar horarios según la sede elegida
+function populateAvailableTimes() {
+  const selectBranch = document.getElementById('selectBranch');
+  const selectTime = document.getElementById('selectTime');
+  if (!selectBranch || !selectTime) return;
+
+  const branchId = Number(selectBranch.value);
+  const instances = currentModalInstances.filter(c => c.branch_id === branchId);
+
+  selectTime.innerHTML = '';
+  if (instances.length === 0) {
+    selectTime.innerHTML = '<option value="">No hay horarios en esta sede</option>';
+    return;
+  }
+
+  // Ordenar horarios cronológicamente
+  instances.sort((a, b) => {
+    const da = new Date(a.class_date + 'T' + a.time);
+    const db = new Date(b.class_date + 'T' + b.time);
+    return da - db;
+  });
+
+  instances.forEach(inst => {
+    const opt = document.createElement('option');
+    opt.value = inst.id;
+    const [year, month, day] = inst.class_date.split('-');
+    const dateFormatted = `${day}/${month}/${year}`;
+    opt.textContent = `${dateFormatted} - ${inst.time}h (Con ${inst.instructor})`;
+    selectTime.appendChild(opt);
+  });
+}
+
+function closeScheduleModal() {
+  const modal = document.getElementById('scheduleSelectorModal');
+  if (modal) modal.classList.remove('open');
+}
+
+async function confirmScheduleSelection() {
+  const selectTime = document.getElementById('selectTime');
+  if (!selectTime || !selectTime.value) {
+    showToast('⚠️ Selecciona un horario válido.');
+    return;
+  }
+
+  const classId = selectTime.value;
+  try {
+    const allClasses = await getClasses();
+    const chosenClass = allClasses.find(c => c.id.toString() === classId.toString());
+    if (!chosenClass) {
+      showToast('❌ Horario no encontrado.');
+      return;
+    }
+
+    state.selectedClass = chosenClass;
+    state.selectedSpot = null;
+    closeScheduleModal();
+    goTo('spot');
+  } catch (err) {
+    console.error(err);
+    showToast('❌ Error al confirmar el horario.');
+  }
+}
+
+function filterClassesByDate(filterType) {
+  state.dateFilter = filterType;
+
+  const buttons = document.querySelectorAll('#dateFilterBar .filter-btn');
+  buttons.forEach(btn => {
+    btn.classList.remove('active');
+    if (btn.id === `date-filter-${filterType}`) {
+      btn.classList.add('active');
+    }
+  });
+
+  renderClientHome();
 }
 
 // ── RENDERIZAR MAPA DE SPOTS INTERACTIVO ──
@@ -781,3 +947,7 @@ window.validateClientIdent = validateClientIdent;
 window.validateClientPayment = validateClientPayment;
 window.closeCancelModal = closeCancelModal;
 window.handleMpPaymentInit = handleMpPaymentInit;
+window.closeScheduleModal = closeScheduleModal;
+window.confirmScheduleSelection = confirmScheduleSelection;
+window.populateAvailableTimes = populateAvailableTimes;
+window.filterClassesByDate = filterClassesByDate;
