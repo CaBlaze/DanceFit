@@ -478,11 +478,15 @@
         <div class="admin-form-card" style="padding: 24px;">
           <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
             <h3 style="font-family:'Playfair Display', serif; font-size:1.25rem; margin:0;">Tendencia de Ingresos</h3>
-            <select style="background:#1c1c1c; color:#fff; border:1px solid #333; border-radius:6px; padding:4px 8px; font-size:0.8rem;">
-              <option>Últimos 6 meses</option>
+            <select id="dashRevenuePeriod" onchange="updateRevenueChart()" style="background:#1c1c1c; color:#fff; border:1px solid #333; border-radius:6px; padding:4px 8px; font-size:0.8rem;">
+              <option value="6meses">Últimos 6 meses</option>
+              <option value="3meses">Últimos 3 meses</option>
+              <option value="mes">Este Mes</option>
+              <option value="semana">Esta Semana</option>
+              <option value="año">Todo el Año</option>
             </select>
           </div>
-          <div style="height: 180px; display: flex; align-items: flex-end; justify-content: space-between; padding-top: 10px; border-bottom: 1px solid #2d2d2d;">
+          <div id="dashRevenueChart" style="height: 180px; display: flex; align-items: flex-end; justify-content: space-between; padding-top: 10px; border-bottom: 1px solid #2d2d2d;">
             <!-- Simulación de barras/gráficos estéticos limpios -->
             <div style="width: 12%; background: #2d2d2d; height: 40%; border-radius: 4px 4px 0 0; text-align: center;"><span style="font-size:10px; color:#757575; display:block; margin-top:-18px;">Ene</span></div>
             <div style="width: 12%; background: #2d2d2d; height: 55%; border-radius: 4px 4px 0 0; text-align: center;"><span style="font-size:10px; color:#757575; display:block; margin-top:-18px;">Feb</span></div>
@@ -517,7 +521,7 @@
         <div class="admin-table-card" style="padding: 24px;">
           <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
             <h3 style="font-family:'Playfair Display', serif; font-size:1.25rem; margin:0;">Clases con Mayor Demanda</h3>
-            <a href="#" style="color: var(--primary, #ff5722); font-size: 0.85rem; text-decoration: none;">Ver todas</a>
+            <a href="javascript:void(0)" onclick="mostrarModalDemandaCompleta()" style="color: var(--primary, #ff5722); font-size: 0.85rem; text-decoration: none;">Ver todas</a>
           </div>
           <div id="dashListaMayorDemanda" style="display: flex; flex-direction: column; gap: 1.2rem;">
             <!-- Renderizado Dinámico mediante JS -->
@@ -659,7 +663,14 @@
           </div>
           <!-- Lista de Clases Existentes -->
           <div class="admin-table-card">
-            <h3 style="font-family:'Playfair Display', serif; font-size:1.35rem; margin-bottom:1.5rem;">Clases Programadas</h3>
+            <div style="display: flex; gap: 15px; align-items: center; margin-bottom: 1.5rem; flex-wrap: wrap; border-bottom: 1px solid var(--border); padding-bottom: 10px;">
+              <h3 style="font-family:'Playfair Display', serif; font-size:1.35rem; margin: 0; flex: 1;">Clases Programadas</h3>
+              <div style="display: flex; align-items: center; gap: 8px;">
+                <label for="adminClassFilterDate" style="font-size: 0.8rem; color: var(--text-muted); font-weight: 700;">Filtrar fecha:</label>
+                <input type="date" id="adminClassFilterDate" onchange="filterAdminClassesByDate()" style="background:#1c1c1c; color:#fff; border:1px solid #333; border-radius:6px; padding:6px 12px; font-size:0.8rem; font-family:inherit;">
+                <button class="btn-secondary" onclick="clearAdminClassDateFilter()" style="padding: 6px 12px; font-size: 0.8rem; border-radius: 6px;">Mostrar Todas</button>
+              </div>
+            </div>
             <table class="admin-table">
               <thead>
                 <tr>
@@ -905,6 +916,20 @@
         <button class="btn-primary" style="width:100%; padding:14px; font-weight:700;" onclick="confirmScheduleSelection()">
           Confirmar Horario y Continuar →
         </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── MODAL RANKING COMPLETO DE DEMANDA ── -->
+  <div id="demandaModal" class="schedule-modal-overlay" role="dialog" aria-modal="true" aria-labelledby="demandaModalTitle">
+    <div class="schedule-modal-card" style="max-width: 550px;">
+      <div class="schedule-modal-header">
+        <button class="schedule-modal-close" onclick="closeDemandaModal()">✕</button>
+        <h2 class="schedule-modal-title" id="demandaModalTitle">Demanda Completa de Clases</h2>
+        <p class="schedule-modal-sub">Ranking completo de reservas por clase.</p>
+      </div>
+      <div class="schedule-modal-body" style="max-height: 400px; overflow-y: auto; gap: 1rem;" id="demandaModalBody">
+        <!-- Relleno dinámico de ranking de clases -->
       </div>
     </div>
   </div>

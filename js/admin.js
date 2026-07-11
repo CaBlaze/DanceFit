@@ -6,6 +6,7 @@
  */
 export async function inicializarDashboardEjecutivo() {
     await cargarMetricasDashboardEjecutivo();
+    await updateRevenueChart();
 }
 
 /**
@@ -96,11 +97,206 @@ export async function cargarMetricasDashboardEjecutivo() {
     }
 }
 
-/**
- * Función manejadora para la descarga del reporte ejecutivo
- */
+// PDF REPORT DOWNLOAD
 window.descargarInformeEjecutivo = function() {
-    alert("Generando informe analítico PDF... El documento consolidado está listo para descarga en tu bandeja.");
+    if (typeof html2pdf === 'undefined') {
+        showToast('⚡ Cargando motor de PDF...');
+        const script = document.createElement('script');
+        script.src = 'https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js';
+        script.onload = () => {
+            generarPDF();
+        };
+        script.onerror = () => {
+            showToast('❌ Error al cargar la librería de PDF.');
+        };
+        document.head.appendChild(script);
+    } else {
+        generarPDF();
+    }
+};
+
+function generarPDF() {
+    showToast('📄 Generando reporte PDF...');
+    const element = document.getElementById('screen-dashboard');
+    if (!element) {
+        showToast('❌ Error: No se encontró el contenedor del dashboard.');
+        return;
+    }
+    
+    const opt = {
+        margin:       [10, 10, 10, 10],
+        filename:     'Reporte_Ejecutivo_DanceFit.pdf',
+        image:        { type: 'jpeg', quality: 0.98 },
+        html2canvas:  { scale: 2, useCORS: true, backgroundColor: '#111111' },
+        jsPDF:        { unit: 'mm', format: 'a4', orientation: 'landscape' }
+    };
+    
+    html2pdf().set(opt).from(element).save();
+}
+
+// REVENUE CHART LOGIC
+window.updateRevenueChart = async function() {
+    const periodSelect = document.getElementById('dashRevenuePeriod');
+    const chartContainer = document.getElementById('dashRevenueChart');
+    if (!periodSelect || !chartContainer) return;
+
+    const period = periodSelect.value;
+    try {
+        const reservas = await getAllReservationsAdmin();
+        const now = new Date();
+        
+        let intervals = [];
+
+        if (period === 'semana') {
+            for (let i = 6; i >= 0; i--) {
+                const d = new Date();
+                d.setDate(now.getDate() - i);
+                intervals.push({
+                    start: new Date(d.setHours(0,0,0,0)),
+                    end: new Date(d.setHours(23,59,59,999)),
+                    label: d.toLocaleDateString('es-ES', { weekday: 'short' })
+                });
+            }
+        } else if (period === 'mes') {
+            const currentYear = now.getFullYear();
+            const currentMonth = now.getMonth();
+            for (let w = 0; w < 4; w++) {
+                const startDay = w * 7 + 1;
+                const endDay = Math.min((w + 1) * 7, 31);
+                intervals.push({
+                    start: new Date(currentYear, currentMonth, startDay, 0, 0, 0),
+                    end: new Date(currentYear, currentMonth, endDay, 23, 59, 59),
+                    label: `Sem ${w + 1}`
+                });
+            }
+        } else if (period === '3meses') {
+            for (let i = 2; i >= 0; i--) {
+                const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
+                intervals.push({
+                    start: new Date(d.getFullYear(), d.getMonth(), 1, 0, 0, 0),
+                    end: new Date(d.getFullYear(), d.getMonth() + 1, 0, 23, 59, 59),
+                    label: d.toLocaleDateString('es-ES', { month: 'short' })
+                });
+            }
+        } else if (period === '6meses') {
+            for (let i = 5; i >= 0; i--) {
+                const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
+                intervals.push({
+                    start: new Date(d.getFullYear(), d.getMonth(), 1, 0, 0, 0),
+                    end: new Date(d.getFullYear(), d.getMonth() + 1, 0, 23, 59, 59),
+                    label: d.toLocaleDateString('es-ES', { month: 'short' })
+                });
+            }
+        } else if (period === 'año') {
+            const currentYear = now.getFullYear();
+            for (let m = 0; m < 12; m++) {
+                intervals.push({
+                    start: new Date(currentYear, m, 1, 0, 0, 0),
+                    end: new Date(currentYear, m + 1, 0, 23, 59, 59),
+                    label: new Date(currentYear, m, 1).toLocaleDateString('es-ES', { month: 'short' })
+                });
+            }
+        }
+
+        const data = intervals.map(interval => {
+            let total = 0;
+            reservas.forEach(res => {
+                const createdTime = new Date(res.created_at).getTime();
+                if (createdTime >= interval.start.getTime() && createdTime <= interval.end.getTime()) {
+                    total += res.classes ? Number(res.classes.price) : 25;
+                }
+            });
+            return { label: interval.label, value: total };
+        });
+
+        const maxVal = Math.max(...data.map(d => d.value), 1);
+        chartContainer.innerHTML = '';
+        const barWidth = Math.max(10, Math.floor(80 / data.length));
+
+        data.forEach(item => {
+            const pctHeight = Math.max(5, Math.round((item.value / maxVal) * 85));
+            const bar = document.createElement('div');
+            bar.style.cssText = `width: ${barWidth}%; background: #2d2d2d; height: ${pctHeight}%; border-radius: 4px 4px 0 0; text-align: center; position: relative; transition: height 0.3s;`;
+            
+            const isHighest = item.value === maxVal && maxVal > 0;
+            if (isHighest) {
+                bar.style.background = 'var(--primary, #ff5722)';
+                bar.style.boxShadow = '0 0 10px rgba(255, 87, 34, 0.2)';
+            }
+
+            bar.innerHTML = `
+                <span style="font-size: 8px; color: ${isHighest ? 'var(--primary, #ff5722)' : '#a0a0a0'}; font-weight: ${isHighest ? 'bold' : 'normal'}; display: block; margin-top: -18px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;" title="S/ ${item.value.toFixed(2)}">
+                    S/ ${item.value.toFixed(0)}
+                </span>
+                <span style="font-size: 9px; color: #757575; display: block; position: absolute; bottom: -20px; left: 50%; transform: translateX(-50%); white-space: nowrap;">
+                    ${item.label}
+                </span>
+            `;
+            chartContainer.appendChild(bar);
+        });
+
+    } catch (err) {
+        console.error("Error al actualizar gráfico de ingresos:", err);
+        chartContainer.innerHTML = `<p style="color:#e63946; font-size:0.8rem; text-align:center; width:100%;">Error al cargar gráfico</p>`;
+    }
+};
+
+// FULL DEMAND RANKING MODAL
+window.mostrarModalDemandaCompleta = async function() {
+    try {
+        const reservas = await getAllReservationsAdmin();
+        const conteoClases = {};
+
+        reservas.forEach((res) => {
+            const nombreClase = res.classes?.name || 'Clase General';
+            const profe = res.classes?.instructor || 'Instructor';
+            if (!conteoClases[nombreClase]) {
+                conteoClases[nombreClase] = { total: 0, instructor: profe };
+            }
+            conteoClases[nombreClase].total += 1;
+        });
+
+        const ordenadas = Object.entries(conteoClases)
+            .sort((a, b) => b[1].total - a[1].total);
+
+        const modalBody = document.getElementById('demandaModalBody');
+        if (!modalBody) return;
+
+        modalBody.innerHTML = '';
+        
+        if (ordenadas.length === 0) {
+            modalBody.innerHTML = '<p style="color:var(--text-muted);text-align:center;padding:1rem;">No hay registros de reservas aún.</p>';
+        } else {
+            ordenadas.forEach(([nombre, info], index) => {
+                const row = document.createElement('div');
+                row.style.cssText = "display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid var(--border); padding-bottom: 10px; margin-bottom: 10px;";
+                row.innerHTML = `
+                    <div style="display:flex; align-items:center; gap:12px;">
+                        <span style="font-weight:bold; font-size:1.1rem; color:var(--accent); width:25px;">#${index + 1}</span>
+                        <div>
+                            <strong>${nombre}</strong>
+                            <div style="font-size:0.75rem; color:#a0a0a0;">Profesor: ${info.instructor}</div>
+                        </div>
+                    </div>
+                    <div style="text-align:right;">
+                        <span class="price-chip" style="background:rgba(255,90,31,0.1); color:var(--accent);">${info.total} Reservas</span>
+                    </div>
+                `;
+                modalBody.appendChild(row);
+            });
+        }
+
+        const modal = document.getElementById('demandaModal');
+        if (modal) modal.classList.add('open');
+    } catch (err) {
+        console.error(err);
+        showToast('❌ Error al cargar ranking.');
+    }
+};
+
+window.closeDemandaModal = function() {
+    const modal = document.getElementById('demandaModal');
+    if (modal) modal.classList.remove('open');
 };
 
 
@@ -187,6 +383,23 @@ async function populateClassFormSelects() {
 }
 
 // ── LISTAR Y ELIMINAR CLASES PROGRAMADAS ──
+let adminClassFilterDateVal = '';
+
+window.filterAdminClassesByDate = function() {
+    const input = document.getElementById('adminClassFilterDate');
+    if (input) {
+        adminClassFilterDateVal = input.value;
+        renderClassesAdminList();
+    }
+};
+
+window.clearAdminClassDateFilter = function() {
+    const input = document.getElementById('adminClassFilterDate');
+    if (input) input.value = '';
+    adminClassFilterDateVal = '';
+    renderClassesAdminList();
+};
+
 async function renderClassesAdminList() {
     const container = document.getElementById('adminClassesTableBody');
     if (!container) return;
@@ -194,11 +407,16 @@ async function renderClassesAdminList() {
     container.innerHTML = '<tr><td colspan="5" style="text-align:center;padding:1.5rem;color:#a0a0a0;">Cargando clases programadas...</td></tr>';
     
     try {
-        const classes = await getClasses();
+        let classes = await getClasses();
         container.innerHTML = '';
+
+        // Aplicar filtro de fecha si está definido
+        if (adminClassFilterDateVal) {
+            classes = classes.filter(c => c.class_date === adminClassFilterDateVal);
+        }
         
         if (classes.length === 0) {
-            container.innerHTML = '<tr><td colspan="5" style="text-align:center;padding:1.5rem;color:#757575;">No hay clases programadas.</td></tr>';
+            container.innerHTML = '<tr><td colspan="5" style="text-align:center;padding:1.5rem;color:#757575;">No hay clases programadas para esta fecha o categoría.</td></tr>';
             return;
         }
         
