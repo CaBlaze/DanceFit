@@ -963,3 +963,47 @@ window.closeScheduleModal = closeScheduleModal;
 window.confirmScheduleSelection = confirmScheduleSelection;
 window.populateAvailableTimes = populateAvailableTimes;
 window.filterClassesByDate = filterClassesByDate;
+
+// ── DESCARGA DE TICKET COMO IMAGEN (GALERÍA) ──
+window.descargarTicketImagen = function() {
+  if (typeof html2canvas === 'undefined') {
+    showToast('⚡ Cargando motor de imagen...');
+    const script = document.createElement('script');
+    script.src = 'https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js';
+    script.onload = () => {
+      generarTicketPNG();
+    };
+    script.onerror = () => {
+      showToast('❌ Error al cargar el motor de imagen.');
+    };
+    document.head.appendChild(script);
+  } else {
+    generarTicketPNG();
+  }
+};
+
+function generarTicketPNG() {
+  showToast('📸 Generando imagen de tu ticket...');
+  const element = document.getElementById('confirmCard');
+  if (!element) {
+    showToast('❌ Error: No se encontró el ticket en pantalla.');
+    return;
+  }
+
+  // Capturar con html2canvas
+  html2canvas(element, {
+    backgroundColor: '#111111',
+    useCORS: true,
+    scale: 2 // Escala 2x para alta definición en móviles
+  }).then(canvas => {
+    const link = document.createElement('a');
+    link.download = 'Ticket_Reserva_DanceFit.png';
+    link.href = canvas.toDataURL('image/png');
+    link.click();
+    showToast('✅ ¡Ticket guardado en descargas!');
+  }).catch(err => {
+    console.error('Error al generar la imagen del ticket:', err);
+    showToast('❌ Error al generar imagen del ticket.');
+  });
+}
+
