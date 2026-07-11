@@ -135,12 +135,7 @@ async function logoutUser() {
   }
 }
 
-// Al final de todo tu archivo js/auth.js:
 window.getSessionUser = getSessionUser;
 window.loginUser = loginUser;
 window.registerUser = registerUser;
 window.logoutUser = logoutUser;
-window.renderAuthScreen = renderAuthScreen;
-window.switchAuthMode = switchAuthMode;
-window.handleAuthSubmit = handleAuthSubmit;
-window.handleLogout = handleLogout;

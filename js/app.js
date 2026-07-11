@@ -383,3 +383,5 @@ window.handleAuthSubmit = handleAuthSubmit;
 window.toggleTheme = toggleTheme;
 window.handleLogout = handleLogout;
 window.showToast = showToast;
+window.renderQR = renderQR;
+window.renderAuthScreen = renderAuthScreen;
