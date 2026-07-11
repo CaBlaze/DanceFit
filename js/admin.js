@@ -499,6 +499,29 @@ window.handleDeleteClass = async function(id) {
 };
 
 // ── GESTIÓN DE PROFESORES ──
+let teacherFilterName = '';
+let teacherFilterSpecialty = '';
+
+window.filterInstructors = function() {
+    const nameInput = document.getElementById('adminTeacherSearchName');
+    const specialtySelect = document.getElementById('adminTeacherSearchSpecialty');
+    if (nameInput) teacherFilterName = nameInput.value.toLowerCase().trim();
+    if (specialtySelect) teacherFilterSpecialty = specialtySelect.value;
+    
+    renderInstructorsAdmin();
+};
+
+window.clearTeacherFilters = function() {
+    const nameInput = document.getElementById('adminTeacherSearchName');
+    const specialtySelect = document.getElementById('adminTeacherSearchSpecialty');
+    if (nameInput) nameInput.value = '';
+    if (specialtySelect) specialtySelect.value = '';
+    teacherFilterName = '';
+    teacherFilterSpecialty = '';
+    
+    renderInstructorsAdmin();
+};
+
 async function renderInstructorsAdmin() {
     const container = document.getElementById('adminInstructorsTableBody');
     if (!container) return;
@@ -509,12 +532,36 @@ async function renderInstructorsAdmin() {
         const insts = await getInstructors();
         container.innerHTML = '';
         
-        if (insts.length === 0) {
-            container.innerHTML = '<tr><td colspan="4" style="text-align:center;padding:1.5rem;color:#757575;">No hay profesores registrados.</td></tr>';
+        // Rellenar select de especialidades dinámicamente si existe
+        const uniqueSpecialties = [...new Set(insts.map(i => i.role).filter(Boolean))];
+        const selectSpecialty = document.getElementById('adminTeacherSearchSpecialty');
+        if (selectSpecialty) {
+            const currentVal = selectSpecialty.value;
+            selectSpecialty.innerHTML = '<option value="">Todas las especialidades</option>';
+            uniqueSpecialties.forEach(spec => {
+                const opt = document.createElement('option');
+                opt.value = spec;
+                opt.textContent = spec;
+                selectSpecialty.appendChild(opt);
+            });
+            selectSpecialty.value = currentVal;
+        }
+
+        // Filtrar instructores
+        let filtered = insts;
+        if (teacherFilterName) {
+            filtered = filtered.filter(i => i.name.toLowerCase().includes(teacherFilterName));
+        }
+        if (teacherFilterSpecialty) {
+            filtered = filtered.filter(i => i.role === teacherFilterSpecialty);
+        }
+        
+        if (filtered.length === 0) {
+            container.innerHTML = '<tr><td colspan="4" style="text-align:center;padding:1.5rem;color:#757575;">No hay profesores que coincidan con la búsqueda.</td></tr>';
             return;
         }
         
-        insts.forEach(i => {
+        filtered.forEach(i => {
             const tr = document.createElement('tr');
             tr.innerHTML = `
                 <td style="font-weight:700;color:var(--accent);font-size:0.8rem;">#${i.id}</td>
@@ -903,6 +950,23 @@ async function calculateAdminMetrics() {
 }
 
 // ── TABLA DE AUDITORÍA DE RESERVAS GLOBALES ──
+let reservaFilterDni = '';
+
+window.filterReservas = function() {
+    const dniInput = document.getElementById('adminReservaSearchDni');
+    if (dniInput) reservaFilterDni = dniInput.value.trim();
+    
+    renderReservasAdminTable();
+};
+
+window.clearReservaFilters = function() {
+    const dniInput = document.getElementById('adminReservaSearchDni');
+    if (dniInput) dniInput.value = '';
+    reservaFilterDni = '';
+    
+    renderReservasAdminTable();
+};
+
 async function renderReservasAdminTable() {
     const container = document.getElementById('adminReservasTableBody');
     if (!container) return;
@@ -910,11 +974,19 @@ async function renderReservasAdminTable() {
     container.innerHTML = '<tr><td colspan="6" style="text-align:center;padding:2rem; color:#a0a0a0;">Obteniendo auditoría global de reservas...</td></tr>';
 
     try {
-        const reservations = await getAllReservationsAdmin();
+        let reservations = await getAllReservationsAdmin();
         container.innerHTML = '';
 
+        // Filtrar reservas por DNI si está definido
+        if (reservaFilterDni) {
+            reservations = reservations.filter(res => {
+                const profile = res.profiles || {};
+                return profile.dni && profile.dni.includes(reservaFilterDni);
+            });
+        }
+
         if (reservations.length === 0) {
-            container.innerHTML = '<tr><td colspan="6" style="text-align:center;padding:2rem;color:#757575;">No existen reservas registradas en el sistema.</td></tr>';
+            container.innerHTML = '<tr><td colspan="6" style="text-align:center;padding:2rem;color:#757575;">No existen reservas que coincidan con la búsqueda.</td></tr>';
             return;
         }
 

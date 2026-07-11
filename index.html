@@ -717,7 +717,16 @@
           </div>
           <!-- Lista de Profesores -->
           <div class="admin-table-card">
-            <h3 style="font-family:'Playfair Display', serif; font-size:1.35rem; margin-bottom:1.5rem;">Instructores del Estudio</h3>
+            <div style="display: flex; gap: 15px; align-items: center; margin-bottom: 1.5rem; flex-wrap: wrap; border-bottom: 1px solid var(--border); padding-bottom: 10px;">
+              <h3 style="font-family:'Playfair Display', serif; font-size:1.35rem; margin: 0; flex: 1;">Instructores del Estudio</h3>
+              <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
+                <input type="text" id="adminTeacherSearchName" oninput="filterInstructors()" placeholder="Buscar por nombre..." style="background:#1c1c1c; color:#fff; border:1px solid #333; border-radius:6px; padding:6px 12px; font-size:0.8rem; font-family:inherit; min-width:140px;">
+                <select id="adminTeacherSearchSpecialty" onchange="filterInstructors()" style="background:#1c1c1c; color:#fff; border:1px solid #333; border-radius:6px; padding:6px 12px; font-size:0.8rem; font-family:inherit;">
+                  <option value="">Todas las especialidades</option>
+                </select>
+                <button class="btn-secondary" onclick="clearTeacherFilters()" style="padding: 6px 12px; font-size: 0.8rem; border-radius: 6px;">Limpiar</button>
+              </div>
+            </div>
             <table class="admin-table">
               <thead>
                 <tr>
@@ -866,7 +875,14 @@
       <div id="admin-panel-reservas" class="admin-panel-content" style="display: none;">
         <!-- Tabla de Reservas del Sistema -->
         <div class="admin-table-card">
-          <h3 style="font-family:'Playfair Display', serif; font-size:1.35rem; margin-bottom:1.5rem;">Auditoría de Reservas</h3>
+            <div style="display: flex; gap: 15px; align-items: center; margin-bottom: 1.5rem; flex-wrap: wrap; border-bottom: 1px solid var(--border); padding-bottom: 10px;">
+              <h3 style="font-family:'Playfair Display', serif; font-size:1.35rem; margin: 0; flex: 1;">Auditoría de Reservas</h3>
+              <div style="display: flex; align-items: center; gap: 8px;">
+                <label for="adminReservaSearchDni" style="font-size: 0.8rem; color: var(--text-muted); font-weight: 700;">Buscar por DNI:</label>
+                <input type="text" id="adminReservaSearchDni" oninput="filterReservas()" placeholder="Escribe el DNI..." style="background:#1c1c1c; color:#fff; border:1px solid #333; border-radius:6px; padding:6px 12px; font-size:0.8rem; font-family:inherit; min-width:150px;">
+                <button class="btn-secondary" onclick="clearReservaFilters()" style="padding: 6px 12px; font-size: 0.8rem; border-radius: 6px;">Limpiar</button>
+              </div>
+            </div>
           <table class="admin-table">
             <thead>
               <tr>
