@@ -134,6 +134,43 @@ function generarPDF() {
     html2pdf().set(opt).from(element).save();
 }
 
+// ECONOMIC REPORT DOWNLOAD
+window.descargarReporteEconomico = function() {
+    if (typeof html2pdf === 'undefined') {
+        showToast('⚡ Cargando motor de PDF...');
+        const script = document.createElement('script');
+        script.src = 'https://cdn.jsdelivr.net/npm/html2pdf.js@0.10.1/dist/html2pdf.bundle.min.js';
+        script.onload = () => {
+            generarPDFEconomico();
+        };
+        script.onerror = () => {
+            showToast('❌ Error al cargar la librería de PDF.');
+        };
+        document.head.appendChild(script);
+    } else {
+        generarPDFEconomico();
+    }
+};
+
+function generarPDFEconomico() {
+    showToast('📄 Generando reporte financiero...');
+    const element = document.getElementById('admin-panel-economia');
+    if (!element) {
+        showToast('❌ Error: No se encontró el contenedor económico.');
+        return;
+    }
+    
+    const opt = {
+        margin:       [10, 10, 10, 10],
+        filename:     'Reporte_Utilidades_DanceFit.pdf',
+        image:        { type: 'jpeg', quality: 0.98 },
+        html2canvas:  { scale: 2, useCORS: true, backgroundColor: '#111111' },
+        jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' }
+    };
+    
+    html2pdf().set(opt).from(element).save();
+}
+
 // REVENUE CHART LOGIC
 window.updateRevenueChart = async function() {
     const periodSelect = document.getElementById('dashRevenuePeriod');
